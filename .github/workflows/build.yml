@@ -1,0 +1,49 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Unit tests (night calculation)
+        run: gradle :app:testDebugUnitTest --stacktrace
+
+      - name: Build APK
+        run: gradle :app:assembleDebug --stacktrace
+
+      - name: Rename
+        run: cp app/build/outputs/apk/debug/app-debug.apk Qiyam.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Qiyam-apk
+          path: Qiyam.apk
+
+      - name: Publish as a release (easy to download on the phone)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Qiyam build ${{ github.run_number }}
+          make_latest: true
+          files: Qiyam.apk
+          body: |
+            Install: open this page on your phone, tap **Qiyam.apk**, then allow "Install unknown apps" for your browser.
+            Updates install over the previous version and keep your streak and settings.

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Qiyam" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/night</item>
+        <item name="android:statusBarColor">@color/night</item>
+        <item name="android:navigationBarColor">@color/night</item>
+    </style>
+    <color name="night">#FF070B1A</color>
+    <color name="gold">#FFE8C27A</color>
+</resources>

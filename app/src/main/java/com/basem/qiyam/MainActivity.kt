@@ -102,6 +102,8 @@ private fun Home() {
     val ctx = LocalContext.current
     val prefs = remember { Prefs(ctx) }
     // Bumped whenever something changes, and on resume, so everything re-reads its state.
+    // It is passed to each card as a parameter: Compose skips redrawing a card whose
+    // parameters haven't changed, and Prefs itself isn't observable.
     var version by remember { mutableIntStateOf(0) }
     fun changed() { Scheduler.scheduleNext(ctx); version++ }
 
@@ -214,18 +216,18 @@ private fun Home() {
                 }
 
                 // Streak
-                StreakCard(prefs, night.key(zone))
+                StreakCard(prefs, night.key(zone), seen)
 
                 // Setup checklist: only shows what still needs doing
-                Checklist(ctx, prefs, onNotif = {
+                Checklist(ctx, prefs, seen, onNotif = {
                     if (Build.VERSION.SDK_INT >= 33) notifPerm.launch(Manifest.permission.POST_NOTIFICATIONS)
                 }, onLocation = { locationPerm.launch(Manifest.permission.ACCESS_COARSE_LOCATION) })
 
                 // Settings
-                SettingsCard(prefs, onChanged = { changed() })
+                SettingsCard(prefs, seen, onChanged = { changed() })
 
                 // Telegram
-                TelegramCard(prefs, onChanged = { changed() }, onToast = { toast = it })
+                TelegramCard(prefs, seen, onChanged = { changed() }, onToast = { toast = it })
 
                 // Test
                 OutlinedButton(
@@ -300,7 +302,7 @@ private fun Chips(options: List<Pair<String, Int>>, selected: Int, onPick: (Int)
 // ------------------------------------------------------------------------------------------------
 
 @Composable
-private fun StreakCard(prefs: Prefs, tonight: LocalDate) {
+private fun StreakCard(prefs: Prefs, tonight: LocalDate, @Suppress("UNUSED_PARAMETER") version: Int) {
     val streak = prefs.streak(tonight)
     Card {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -329,7 +331,7 @@ private fun StreakCard(prefs: Prefs, tonight: LocalDate) {
 }
 
 @Composable
-private fun Checklist(ctx: Context, prefs: Prefs, onNotif: () -> Unit, onLocation: () -> Unit) {
+private fun Checklist(ctx: Context, prefs: Prefs, @Suppress("UNUSED_PARAMETER") version: Int, onNotif: () -> Unit, onLocation: () -> Unit) {
     val pkg = ctx.packageName
     val nm = ctx.getSystemService(NotificationManager::class.java)
     val pm = ctx.getSystemService(PowerManager::class.java)
@@ -396,7 +398,7 @@ private fun Checklist(ctx: Context, prefs: Prefs, onNotif: () -> Unit, onLocatio
 }
 
 @Composable
-private fun SettingsCard(prefs: Prefs, onChanged: () -> Unit) {
+private fun SettingsCard(prefs: Prefs, @Suppress("UNUSED_PARAMETER") version: Int, onChanged: () -> Unit) {
     var methodOpen by remember { mutableStateOf(false) }
     var manual by remember { mutableStateOf("") }
     Card {
@@ -452,7 +454,7 @@ private fun SettingsCard(prefs: Prefs, onChanged: () -> Unit) {
 }
 
 @Composable
-private fun TelegramCard(prefs: Prefs, onChanged: () -> Unit, onToast: (String) -> Unit) {
+private fun TelegramCard(prefs: Prefs, @Suppress("UNUSED_PARAMETER") version: Int, onChanged: () -> Unit, onToast: (String) -> Unit) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     var token by remember { mutableStateOf(prefs.botToken) }

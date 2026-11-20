@@ -9,28 +9,26 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.annotation.Config
+import com.basem.qiyam.ui.Motion
 
 /** Taps the real settings on the real screen and checks they change, on a simulated phone. */
 @RunWith(AndroidJUnit4::class)
 @Config(sdk = [34])
 class SettingsScreenTest {
 
+    init {
+        // Must be off before the screen opens: a screen that never stops moving never settles.
+        Motion.live = false
+    }
+
     @get:Rule
     val rule = createAndroidComposeRule<MainActivity>()
 
-    @Before
-    fun setUp() {
-        // The night dial twinkles forever, so drive the clock by hand.
-        rule.mainClock.autoAdvance = false
-        rule.mainClock.advanceTimeBy(1_000)
-    }
-
-    private fun settle() = rule.mainClock.advanceTimeBy(500)
+    private fun settle() = rule.waitForIdle()
 
     @Test
     fun wakeOffsetChipsChangeAndShowSelection() {

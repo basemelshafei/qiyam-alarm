@@ -75,6 +75,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.basem.qiyam.ui.Motion
 import com.basem.qiyam.ui.Night
 import com.basem.qiyam.ui.NightDial
 import com.basem.qiyam.ui.QiyamTheme
@@ -109,7 +110,7 @@ private fun Home() {
     fun changed() { Scheduler.scheduleNext(ctx); version++ }
 
     var now by remember { mutableStateOf(Instant.now()) }
-    LaunchedEffect(Unit) { while (true) { now = Instant.now(); delay(1000) } }
+    LaunchedEffect(Unit) { while (Motion.live) { now = Instant.now(); delay(1000) } }
 
     val owner = LocalLifecycleOwner.current
     DisposableEffect(owner) {

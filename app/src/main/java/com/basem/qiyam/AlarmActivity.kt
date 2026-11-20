@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.basem.qiyam.ui.Motion
 import com.basem.qiyam.ui.Night
 import com.basem.qiyam.ui.NightDial
 import com.basem.qiyam.ui.QiyamTheme
@@ -96,7 +97,7 @@ private fun AlarmScreen(r: AlarmService.Ringing, onUp: () -> Unit, onSnooze: () 
     val zone = java.time.ZoneId.systemDefault()
     val fmt = remember { DateTimeFormatter.ofPattern("HH:mm").withZone(zone) }
     var now by remember { mutableStateOf(Instant.now()) }
-    LaunchedEffect(Unit) { while (true) { now = Instant.now(); delay(1000) } }
+    LaunchedEffect(Unit) { while (Motion.live) { now = Instant.now(); delay(1000) } }
 
     Column(
         Modifier.fillMaxSize().background(Night.sky).verticalScroll(rememberScrollState()).padding(24.dp),

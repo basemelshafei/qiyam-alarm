@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,11 +42,13 @@ fun NightDial(
         val rnd = Random(7)
         List(70) { Triple(rnd.nextFloat(), rnd.nextFloat(), rnd.nextFloat()) }
     }
-    val twinkle by rememberInfiniteTransition(label = "twinkle").animateFloat(
-        initialValue = 0.35f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(2600, easing = LinearEasing), RepeatMode.Reverse),
-        label = "twinkle",
-    )
+    val twinkle = if (Motion.live) {
+        rememberInfiniteTransition(label = "twinkle").animateFloat(
+            initialValue = 0.35f, targetValue = 1f,
+            animationSpec = infiniteRepeatable(tween(2600, easing = LinearEasing), RepeatMode.Reverse),
+            label = "twinkle",
+        ).value
+    } else 0.8f
     val inLastThird = progress != null && progress >= 2f / 3f
 
     Box(modifier.fillMaxWidth().aspectRatio(1.55f), contentAlignment = Alignment.BottomCenter) {

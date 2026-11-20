@@ -57,10 +57,7 @@ object Scheduler {
         val (_, wake) = NightCalculator.nextWake(p.lat, p.lng, p.method, p.offsetMinutes, now, p.zone)
 
         // setAlarmClock = a real alarm: shows the alarm icon, survives Doze, can't be deferred.
-        am.setAlarmClock(
-            AlarmManager.AlarmClockInfo(wake.toEpochMilli(), showApp(ctx)),
-            pi(ctx, ACTION_WAKE, RC_WAKE),
-        )
+        alarmClock(ctx, wake, pi(ctx, ACTION_WAKE, RC_WAKE))
 
         if (p.preAlarmMinutes > 0) {
             val pre = wake.minusSeconds(p.preAlarmMinutes * 60L)
@@ -69,27 +66,31 @@ object Scheduler {
         return wake
     }
 
-    fun scheduleSnooze(ctx: Context, at: Instant) {
-        am(ctx).setAlarmClock(
-            AlarmManager.AlarmClockInfo(at.toEpochMilli(), showApp(ctx)),
-            pi(ctx, ACTION_SNOOZE_WAKE, RC_SNOOZE),
-        )
+    fun scheduleSnooze(ctx: Context, at: Instant) = alarmClock(ctx, at, pi(ctx, ACTION_SNOOZE_WAKE, RC_SNOOZE))
+
+    /** A real alarm if Android allows it; otherwise the closest thing, rather than crashing. */
+    private fun alarmClock(ctx: Context, at: Instant, op: PendingIntent) {
+        try {
+            am(ctx).setAlarmClock(AlarmManager.AlarmClockInfo(at.toEpochMilli(), showApp(ctx)), op)
+        } catch (e: SecurityException) {
+            am(ctx).setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at.toEpochMilli(), op)
+        }
     }
 
     fun cancelSnooze(ctx: Context) = am(ctx).cancel(pi(ctx, ACTION_SNOOZE_WAKE, RC_SNOOZE))
 
     /** Fires a full test alarm a few seconds from now without touching tonight's schedule. */
     fun scheduleTest(ctx: Context, seconds: Long) {
-        am(ctx).setAlarmClock(
-            AlarmManager.AlarmClockInfo(System.currentTimeMillis() + seconds * 1000, showApp(ctx)),
-            pi(ctx, ACTION_SNOOZE_WAKE, RC_SNOOZE, test = true),
-        )
+        alarmClock(ctx, Instant.now().plusSeconds(seconds), pi(ctx, ACTION_SNOOZE_WAKE, RC_SNOOZE, test = true))
     }
 
     private fun exact(ctx: Context, at: Instant, op: PendingIntent) {
         val am = am(ctx)
-        if (canExact(ctx)) {
-            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at.toEpochMilli(), op)
+        if (canExact(ctx) && runCatching {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at.toEpochMilli(), op)
+            }.isSuccess
+        ) {
+            return
         } else {
             am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at.toEpochMilli(), op)
         }

@@ -2,6 +2,7 @@ package com.basem.qiyam
 
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.compose.runtime.mutableIntStateOf
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -10,54 +11,81 @@ class Prefs(context: Context) {
     private val sp: SharedPreferences =
         context.applicationContext.getSharedPreferences("qiyam", Context.MODE_PRIVATE)
 
+    companion object {
+        /**
+         * Compose state that every getter reads and every setter bumps. Any part of the screen
+         * that shows a setting redraws the moment it changes, whoever changed it (the screen,
+         * the alarm service, or a background thread).
+         */
+        private val changes = mutableIntStateOf(0)
+    }
+
+    private fun watch() {
+        changes.intValue
+    }
+
+    private fun edit(block: SharedPreferences.Editor.() -> Unit) {
+        sp.edit().apply(block).apply()
+        changes.intValue++
+    }
+
+    private fun bool(k: String, d: Boolean): Boolean { watch(); return sp.getBoolean(k, d) }
+    private fun int(k: String, d: Int): Int { watch(); return sp.getInt(k, d) }
+    private fun long(k: String, d: Long): Long { watch(); return sp.getLong(k, d) }
+    private fun str(k: String, d: String): String { watch(); return sp.getString(k, d) ?: d }
+    private fun dbl(k: String, d: Double): Double {
+        watch(); return java.lang.Double.longBitsToDouble(sp.getLong(k, java.lang.Double.doubleToLongBits(d)))
+    }
+
     var enabled: Boolean
-        get() = sp.getBoolean("enabled", true)
-        set(v) = sp.edit().putBoolean("enabled", v).apply()
+        get() = bool("enabled", true)
+        set(v) = edit { putBoolean("enabled", v) }
 
     val hasLocation: Boolean
-        get() = sp.contains("lat")
+        get() { watch(); return sp.contains("lat") }
 
     var lat: Double
-        get() = java.lang.Double.longBitsToDouble(sp.getLong("lat", java.lang.Double.doubleToLongBits(51.5074)))
-        set(v) = sp.edit().putLong("lat", java.lang.Double.doubleToLongBits(v)).apply()
+        get() = dbl("lat", 51.5074)
+        set(v) = edit { putLong("lat", java.lang.Double.doubleToLongBits(v)) }
 
     var lng: Double
-        get() = java.lang.Double.longBitsToDouble(sp.getLong("lng", java.lang.Double.doubleToLongBits(-0.1278)))
-        set(v) = sp.edit().putLong("lng", java.lang.Double.doubleToLongBits(v)).apply()
+        get() = dbl("lng", -0.1278)
+        set(v) = edit { putLong("lng", java.lang.Double.doubleToLongBits(v)) }
 
     var placeName: String
-        get() = sp.getString("place", "London (default)") ?: ""
-        set(v) = sp.edit().putString("place", v).apply()
+        get() = str("place", "London (default)")
+        set(v) = edit { putString("place", v) }
 
     var method: Method
-        get() = runCatching { Method.valueOf(sp.getString("method", Method.MUSLIM_WORLD_LEAGUE.name)!!) }
+        get() = runCatching { Method.valueOf(str("method", Method.MUSLIM_WORLD_LEAGUE.name)) }
             .getOrDefault(Method.MUSLIM_WORLD_LEAGUE)
-        set(v) = sp.edit().putString("method", v.name).apply()
+        set(v) = edit { putString("method", v.name) }
 
     /** Minutes after the start of the last third to ring (0 = exactly at the start). */
     var offsetMinutes: Int
-        get() = sp.getInt("offset", 0)
-        set(v) = sp.edit().putInt("offset", v).apply()
+        get() = int("offset", 0)
+        set(v) = edit { putInt("offset", v) }
 
     /** Gentle heads-up this many minutes before the main alarm (0 = off). */
     var preAlarmMinutes: Int
-        get() = sp.getInt("pre", 10)
-        set(v) = sp.edit().putInt("pre", v).apply()
+        get() = int("pre", 10)
+        set(v) = edit { putInt("pre", v) }
 
     var snoozeMinutes: Int
-        get() = sp.getInt("snooze", 5)
-        set(v) = sp.edit().putInt("snooze", v).apply()
+        get() = int("snooze", 5)
+        set(v) = edit { putInt("snooze", v) }
 
     // --- Telegram -------------------------------------------------------------------------
 
     var botToken: String
-        get() = sp.getString("bot", "") ?: ""
-        set(v) = sp.edit().putString("bot", v.trim()).apply()
+        get() = str("bot", "")
+        set(v) = edit { putString("bot", v.trim()) }
 
     var chatId: Long
-        get() = sp.getLong("chat", 0L)
-        set(v) = sp.edit().putLong("chat", v).apply()
+        get() = long("chat", 0L)
+        set(v) = edit { putLong("chat", v) }
 
+    /** Telegram polling position. Not shown on screen, so it doesn't trigger redraws. */
     var updateOffset: Long
         get() = sp.getLong("upd", 0L)
         set(v) = sp.edit().putLong("upd", v).apply()
@@ -72,13 +100,12 @@ class Prefs(context: Context) {
     // --- Streaks ----------------------------------------------------------------------------
 
     /** Nights (keyed by the date of their Fajr) on which you got up. */
-    var wokeNights: Set<String>
-        get() = sp.getStringSet("woke", emptySet())!!.toSet()
-        private set(v) = sp.edit().putStringSet("woke", v).apply()
+    val wokeNights: Set<String>
+        get() { watch(); return sp.getStringSet("woke", emptySet())!!.toSet() }
 
     fun markWoke(night: LocalDate) {
-        wokeNights = (wokeNights + night.toString())
-            .sorted().takeLast(400).toSet()
+        val updated = (wokeNights + night.toString()).sorted().takeLast(400).toSet()
+        edit { putStringSet("woke", updated) }
     }
 
     fun woke(night: LocalDate) = night.toString() in wokeNights

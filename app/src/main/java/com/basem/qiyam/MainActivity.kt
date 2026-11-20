@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -293,7 +294,7 @@ private fun Chips(options: List<Pair<String, Int>>, selected: Int, onPick: (Int)
             Box(
                 Modifier.clip(RoundedCornerShape(50)).background(if (on) Night.Gold else Color.Transparent)
                     .border(1.dp, if (on) Night.Gold else Night.CardEdge, RoundedCornerShape(50))
-                    .clickable { onPick(value) }.padding(horizontal = 14.dp, vertical = 7.dp),
+                    .selectable(selected = on, onClick = { onPick(value) }).padding(horizontal = 14.dp, vertical = 7.dp),
             ) { Text(label, color = if (on) Night.Ink else Night.Text, fontSize = 13.sp) }
         }
     }
@@ -353,7 +354,7 @@ private fun Checklist(ctx: Context, prefs: Prefs, @Suppress("UNUSED_PARAMETER") 
         },
         Item(
             "Full-screen alarm", "So the alarm page opens over the lock screen",
-            Build.VERSION.SDK_INT < 34 || nm.canUseFullScreenIntent(),
+            Build.VERSION.SDK_INT < 34 || runCatching { nm.canUseFullScreenIntent() }.getOrDefault(true),
         ) {
             if (Build.VERSION.SDK_INT >= 34) ctx.startActivity(
                 Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, Uri.parse("package:$pkg")),
@@ -361,7 +362,7 @@ private fun Checklist(ctx: Context, prefs: Prefs, @Suppress("UNUSED_PARAMETER") 
         },
         Item(
             "Battery: unrestricted", "Samsung puts apps to sleep. Also add Qiyam to \"Never sleeping apps\".",
-            pm.isIgnoringBatteryOptimizations(pkg),
+            runCatching { pm.isIgnoringBatteryOptimizations(pkg) }.getOrDefault(true),
         ) {
             @SuppressLint("BatteryLife")
             val i = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$pkg"))

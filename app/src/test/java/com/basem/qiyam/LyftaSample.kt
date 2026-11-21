@@ -27,7 +27,7 @@ object LyftaSample {
             val base = 60 + (50 - i).toInt() / 4
             list += when (kind) {
                 0 -> workout(id++, "Push Day", d, 5200 + base * 10,
-                    ex("Bench Press (Barbell)", set("$base", "8"), set("$base", "8"), set("${base + 2.5}", "6", pr = i == 1L)),
+                    ex("Bench Press (Barbell)", set("$base", "8"), set("$base", "8"), set("${base + 2.5}", "6", pr = i < 10)),
                     ex("Overhead Press", set("40", "10"), set("40", "9"), set("40", "8")),
                     ex("Tricep Pushdown", set("25", "12"), set("25", "12")))
                 1 -> workout(id++, "Pull Day", d, 6100 + base * 10,

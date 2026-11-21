@@ -6,27 +6,27 @@ import androidx.compose.runtime.mutableIntStateOf
 import java.time.LocalDate
 import java.time.ZoneId
 
-/** Everything the app remembers, in one place. */
+/**
+ * Compose state that every stored value's getter reads and every setter bumps. Any part of the
+ * screen that shows stored data redraws the moment it changes, whoever changed it (the screen,
+ * the alarm service, or a background thread).
+ */
+object Changes {
+    private val counter = mutableIntStateOf(0)
+    fun watch() { counter.intValue }
+    fun bump() { counter.intValue++ }
+}
+
+/** Settings and long-lived state. Day-by-day records live in [DayLog]. */
 class Prefs(context: Context) {
     private val sp: SharedPreferences =
         context.applicationContext.getSharedPreferences("qiyam", Context.MODE_PRIVATE)
 
-    companion object {
-        /**
-         * Compose state that every getter reads and every setter bumps. Any part of the screen
-         * that shows a setting redraws the moment it changes, whoever changed it (the screen,
-         * the alarm service, or a background thread).
-         */
-        private val changes = mutableIntStateOf(0)
-    }
-
-    private fun watch() {
-        changes.intValue
-    }
+    private fun watch() = Changes.watch()
 
     private fun edit(block: SharedPreferences.Editor.() -> Unit) {
         sp.edit().apply(block).apply()
-        changes.intValue++
+        Changes.bump()
     }
 
     private fun bool(k: String, d: Boolean): Boolean { watch(); return sp.getBoolean(k, d) }
@@ -74,6 +74,18 @@ class Prefs(context: Context) {
     var snoozeMinutes: Int
         get() = int("snooze", 5)
         set(v) = edit { putInt("snooze", v) }
+
+    // --- Tracker -----------------------------------------------------------------------------
+
+    /** Planned gym days, as java.time.DayOfWeek values 1 (Mon) to 7 (Sun). */
+    var gymDays: Set<Int>
+        get() { watch(); return sp.getStringSet("gymDays", setOf("1", "2", "4", "5"))!!.mapNotNull { it.toIntOrNull() }.toSet() }
+        set(v) = edit { putStringSet("gymDays", v.map { it.toString() }.toSet()) }
+
+    /** What you're memorising now, e.g. "Al-Mulk 1–10". */
+    var quranCurrent: String
+        get() = str("quranNow", "")
+        set(v) = edit { putString("quranNow", v.trim()) }
 
     // --- Telegram -------------------------------------------------------------------------
 

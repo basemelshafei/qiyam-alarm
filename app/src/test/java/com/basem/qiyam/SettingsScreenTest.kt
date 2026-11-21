@@ -4,11 +4,13 @@ import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,6 +31,15 @@ class SettingsScreenTest {
     val rule = createAndroidComposeRule<MainActivity>()
 
     private fun settle() = rule.waitForIdle()
+
+    /** The Qiyam settings now live under Deen › Qiyam alarm. */
+    @Before
+    fun openQiyamPage() {
+        rule.onNodeWithTag("tab_deen").performClick()
+        settle()
+        rule.onNodeWithText("Qiyam alarm").performScrollTo().performClick()
+        settle()
+    }
 
     @Test
     fun wakeOffsetChipsChangeAndShowSelection() {

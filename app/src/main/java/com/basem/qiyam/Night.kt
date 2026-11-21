@@ -37,6 +37,11 @@ data class NightWindow(val maghrib: Instant, val fajr: Instant) {
     fun key(zone: ZoneId): LocalDate = fajr.atZone(zone).toLocalDate()
 }
 
+data class DayPrayers(
+    val fajr: Instant, val sunrise: Instant, val dhuhr: Instant,
+    val asr: Instant, val maghrib: Instant, val isha: Instant,
+)
+
 /** Calculation methods offered in settings. Names map to the adhan library's enum. */
 enum class Method(val label: String) {
     MUSLIM_WORLD_LEAGUE("Muslim World League"),
@@ -63,6 +68,15 @@ object NightCalculator {
         // Noon local time, so the library's calendar conversion can't slip to the wrong day.
         val noon = Date.from(day.atTime(12, 0).atZone(zone).toInstant())
         return PrayerTimes(Coordinates(lat, lng), DateComponents.from(noon), params)
+    }
+
+    /** All of [day]'s prayer times. */
+    fun prayers(lat: Double, lng: Double, method: Method, day: LocalDate, zone: ZoneId): DayPrayers {
+        val p = prayerTimes(lat, lng, method, day, zone)
+        return DayPrayers(
+            p.fajr.toInstant(), p.sunrise.toInstant(), p.dhuhr.toInstant(),
+            p.asr.toInstant(), p.maghrib.toInstant(), p.isha.toInstant(),
+        )
     }
 
     /** The night that starts with Maghrib on [day]. */

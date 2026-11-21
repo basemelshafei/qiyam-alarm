@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.basem.qiyam"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.basem.qiyam"

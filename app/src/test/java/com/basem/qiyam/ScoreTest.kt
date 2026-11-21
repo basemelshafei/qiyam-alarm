@@ -27,4 +27,10 @@ class ScoreTest {
         assertEquals(true, Plan.isFastDay(java.time.LocalDate.of(2026, 11, 26)))  // Thursday
         assertEquals(false, Plan.isFastDay(java.time.LocalDate.of(2026, 11, 21))) // Saturday
     }
+
+    @Test fun durationsReadNaturally() {
+        assertEquals("1h 5m", prettyDuration("01:05:00"))
+        assertEquals("48 min", prettyDuration("00:48:10"))
+        assertEquals(null, prettyDuration(""))
+    }
 }

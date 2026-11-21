@@ -264,7 +264,7 @@ private fun WorkoutRow(w: LyftaWorkout) {
                         w.date.format(DateTimeFormatter.ofPattern("EEE d MMM")),
                         "${w.exercises.size} exercises",
                         "${w.setCount} sets",
-                        w.duration.removePrefix("00:").ifBlank { null },
+                        prettyDuration(w.duration),
                     ).filterNotNull().joinToString(" · "),
                     color = Night.Muted, fontSize = 13.sp,
                 )
@@ -417,5 +417,18 @@ private fun syncedAgo(at: Long): String {
         mins < 60 -> " · synced ${mins}m ago"
         mins < 24 * 60 -> " · synced ${mins / 60}h ago"
         else -> " · synced ${mins / (24 * 60)}d ago"
+    }
+}
+
+/** "01:05:00" → "1h 5m"; "00:48:10" → "48 min". */
+fun prettyDuration(hms: String): String? {
+    val p = hms.split(":").mapNotNull { it.trim().toIntOrNull() }
+    if (p.size < 2) return null
+    val h = if (p.size == 3) p[0] else 0
+    val m = if (p.size == 3) p[1] else p[0]
+    return when {
+        h == 0 && m == 0 -> null
+        h == 0 -> "$m min"
+        else -> "${h}h ${m}m"
     }
 }

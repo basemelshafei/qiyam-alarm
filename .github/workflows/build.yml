@@ -45,7 +45,9 @@ jobs:
         run: gradle :app:assembleDebug --stacktrace
 
       - name: Rename
-        run: cp app/build/outputs/apk/debug/app-debug.apk Qiyam.apk
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk Qiyam.apk
+          (cd app/build/screenshots && zip -q -r ../../../screenshots.zip .) || true
 
       - uses: actions/upload-artifact@v4
         with:
@@ -58,7 +60,9 @@ jobs:
           tag_name: build-${{ github.run_number }}
           name: Qiyam build ${{ github.run_number }}
           make_latest: true
-          files: Qiyam.apk
+          files: |
+            Qiyam.apk
+            screenshots.zip
           body: |
             Install: open this page on your phone, tap **Qiyam.apk**, then allow "Install unknown apps" for your browser.
             Updates install over the previous version and keep your streak and settings.

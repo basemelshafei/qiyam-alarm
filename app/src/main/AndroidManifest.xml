@@ -16,17 +16,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
-    <!-- Health Connect (read only): Fitbit Air data via Google Health, workouts from Lyfta. -->
-    <uses-permission android:name="android.permission.health.READ_STEPS" />
-    <uses-permission android:name="android.permission.health.READ_SLEEP" />
-    <uses-permission android:name="android.permission.health.READ_HEART_RATE" />
-    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE" />
-    <uses-permission android:name="android.permission.health.READ_EXERCISE" />
-    <uses-permission android:name="android.permission.health.READ_WEIGHT" />
-
-    <queries>
-        <package android:name="com.google.android.apps.healthdata" />
-    </queries>
 
     <application
         android:allowBackup="true"
@@ -56,30 +45,16 @@
             android:turnScreenOn="true"
             android:taskAffinity="com.basem.qiyam.alarm" />
 
-        <!-- Health Connect shows this when you ask why the app wants your health data. -->
-        <activity
-            android:name=".HealthPrivacyActivity"
-            android:exported="true"
-            android:theme="@style/Theme.Qiyam">
-            <intent-filter>
-                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE" />
-            </intent-filter>
-        </activity>
-        <activity-alias
-            android:name="ViewPermissionUsageActivity"
-            android:exported="true"
-            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
-            android:targetActivity=".HealthPrivacyActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE" />
-                <category android:name="android.intent.category.HEALTH_PERMISSIONS" />
-            </intent-filter>
-        </activity-alias>
-
         <service
             android:name=".AlarmService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
+
+        <!-- Read-only summary for Istiqamah (same signing key only; checked in code). -->
+        <provider
+            android:name=".SummaryProvider"
+            android:authorities="com.basem.qiyam.summary"
+            android:exported="true" />
 
         <receiver
             android:name=".AlarmReceiver"

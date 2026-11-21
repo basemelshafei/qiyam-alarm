@@ -116,7 +116,7 @@ private fun AlarmScreen(r: AlarmService.Ringing, onUp: () -> Unit, onSnooze: () 
                 Text("until Fajr · ${fmt.format(r.night.fajr)}", color = Sky.Muted, fontSize = 13.sp)
             }
         }
-        if (Plan.isFastDay(r.night.key(zone))) {
+        if (isFastDay(r.night.key(zone))) {
             Text(
                 "Fast day: suhoor before ${fmt.format(r.night.fajr)}",
                 color = Sky.Gold, fontSize = 15.sp, modifier = Modifier.padding(top = 12.dp),

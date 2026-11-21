@@ -92,7 +92,7 @@ import java.util.Locale
 
 /** The Qiyam alarm page: tonight's dial, alarm status, setup checklist, settings, Telegram. */
 @Composable
-fun QiyamScreen(onBack: () -> Unit) {
+fun QiyamScreen(onBack: (() -> Unit)?) {
     val ctx = LocalContext.current
     val prefs = remember { Prefs(ctx) }
     // Bumped whenever something changes, and on resume, so everything re-reads its state.
@@ -139,15 +139,15 @@ fun QiyamScreen(onBack: () -> Unit) {
             Column(Modifier.widthIn(max = 560.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
 
                 // Header
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                if (onBack != null) Row(verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = onBack, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
                         Glyph(G.CHEVRON, Night.Gold, 20.dp, Modifier.graphicsLayer { rotationZ = 180f })
-                        Text("Deen", color = Night.Gold, fontSize = 17.sp)
+                        Text("Back", color = Night.Gold, fontSize = 17.sp)
                     }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("Qiyam alarm", color = Night.Text, fontSize = 34.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.8).sp)
+                        Text("Qiyam", color = Night.Text, fontSize = 34.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.8).sp)
                         Text(
                             "${prefs.placeName} · ${prefs.method.label.substringBefore(" (")}",
                             color = Night.Muted, fontSize = 13.sp,

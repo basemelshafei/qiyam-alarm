@@ -55,8 +55,6 @@ android {
 
 dependencies {
     implementation("com.batoulapps.adhan:adhan:1.2.1")
-    // Health Connect: reads Fitbit (via Google Health) steps, sleep, heart rate, workouts.
-    implementation("androidx.health.connect:connect-client:1.1.0")
 
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.activity:activity-compose:1.9.2")

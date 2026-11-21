@@ -291,7 +291,7 @@ class AlarmService : Service() {
             append("Started ${fmt.format(r.night.lastThird)} · Fajr ${fmt.format(r.night.fajr)} · ${human(left)} left\n\n")
             append("<i>${Telegram.esc(rem.arabic)}</i>\n\n")
             append("${Telegram.esc(rem.english)}\n— ${Telegram.esc(rem.source)}")
-            if (Plan.isFastDay(r.night.key(p.zone))) {
+            if (isFastDay(r.night.key(p.zone))) {
                 append("\n\n🍽 Today is a Monday/Thursday fast. Have suhoor before Fajr at ${fmt.format(r.night.fajr)}.")
             }
             val s = p.streak(r.night.key(p.zone))

@@ -17,7 +17,7 @@ object Changes {
     fun bump() { counter.intValue++ }
 }
 
-/** Settings and long-lived state. Day-by-day records live in [DayLog]. */
+/** Settings and long-lived state. */
 class Prefs(context: Context) {
     private val sp: SharedPreferences =
         context.applicationContext.getSharedPreferences("qiyam", Context.MODE_PRIVATE)
@@ -74,38 +74,6 @@ class Prefs(context: Context) {
     var snoozeMinutes: Int
         get() = int("snooze", 5)
         set(v) = edit { putInt("snooze", v) }
-
-    // --- Tracker -----------------------------------------------------------------------------
-
-    /** Planned gym days, as java.time.DayOfWeek values 1 (Mon) to 7 (Sun). */
-    var gymDays: Set<Int>
-        get() { watch(); return sp.getStringSet("gymDays", setOf("1", "2", "4", "5"))!!.mapNotNull { it.toIntOrNull() }.toSet() }
-        set(v) = edit { putStringSet("gymDays", v.map { it.toString() }.toSet()) }
-
-    /** What you're memorising now, e.g. "Al-Mulk 1–10". */
-    var quranCurrent: String
-        get() = str("quranNow", "")
-        set(v) = edit { putString("quranNow", v.trim()) }
-
-    // --- Connected apps --------------------------------------------------------------------
-
-    /** Daily step goal for the Body ring. */
-    var stepGoal: Int
-        get() = int("stepGoal", 8000)
-        set(v) = edit { putInt("stepGoal", v) }
-
-    var healthSyncedAt: Long
-        get() = long("hcSynced", 0L)
-        set(v) = edit { putLong("hcSynced", v) }
-
-    /** Personal Lyfta API key (my.lyfta.app › API). Stays on this phone. */
-    var lyftaKey: String
-        get() = str("lyftaKey", "")
-        set(v) = edit { putString("lyftaKey", v.trim()) }
-
-    var lyftaSyncedAt: Long
-        get() = long("lyftaSynced", 0L)
-        set(v) = edit { putLong("lyftaSynced", v) }
 
     // --- Telegram -------------------------------------------------------------------------
 

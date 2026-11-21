@@ -120,3 +120,6 @@ object NightCalculator {
         return if (wanted.isAfter(latest)) latest else wanted
     }
 }
+
+/** Monday and Thursday: the sunnah fasts. The alarm reminds you about suhoor on these mornings. */
+fun isFastDay(day: LocalDate) = day.dayOfWeek == java.time.DayOfWeek.MONDAY || day.dayOfWeek == java.time.DayOfWeek.THURSDAY

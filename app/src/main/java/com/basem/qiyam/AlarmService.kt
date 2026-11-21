@@ -45,7 +45,7 @@ class AlarmService : Service() {
 
         /** What the alarm screen shows. Null when nothing is ringing. */
         @Volatile var ringing: Ringing? = null
-            private set
+            internal set // tests set it to preview the alarm page
 
         fun send(ctx: Context, action: String) {
             ctx.startService(Intent(ctx, AlarmService::class.java).setAction(action))

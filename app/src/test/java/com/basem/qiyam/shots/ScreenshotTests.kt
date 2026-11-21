@@ -1,0 +1,75 @@
+package com.basem.qiyam.shots
+
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.basem.qiyam.AlarmActivity
+import com.basem.qiyam.AlarmService
+import com.basem.qiyam.MainActivity
+import com.basem.qiyam.Method
+import com.basem.qiyam.NightCalculator
+import com.basem.qiyam.Reminders
+import com.basem.qiyam.ui.Motion
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
+import java.time.Instant
+import java.time.ZoneId
+
+/*
+ * Renders every screen with sample data into app/build/screenshots, so each build can be
+ * looked at before installing. Pages are rendered extra tall to show them in full.
+ * Cover screen ≈ 360dp wide; unfolded inner screen ≈ 690dp wide.
+ */
+
+@RunWith(AndroidJUnit4::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [34], qualifiers = "w360dp-h1700dp-xxhdpi")
+class FoldedScreenshots {
+    init { Motion.live = false }
+
+    @get:Rule val rule = createAndroidComposeRule<MainActivity>()
+
+    @Test fun allScreens() {
+        Shots.seed(rule.activity)
+        Shots.save(rule, "folded_1_today")
+        Shots.tab(rule, "tab_deen"); Shots.save(rule, "folded_2_deen")
+        Shots.tab(rule, "tab_body"); Shots.save(rule, "folded_3_body")
+        Shots.tab(rule, "tab_career"); Shots.save(rule, "folded_4_career")
+        Shots.tab(rule, "tab_wealth"); Shots.save(rule, "folded_5_wealth")
+        Shots.openQiyam(rule); Shots.save(rule, "folded_6_qiyam")
+    }
+}
+
+@RunWith(AndroidJUnit4::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [34], qualifiers = "w690dp-h1500dp-xhdpi")
+class UnfoldedScreenshots {
+    init { Motion.live = false }
+
+    @get:Rule val rule = createAndroidComposeRule<MainActivity>()
+
+    @Test fun allScreens() {
+        Shots.seed(rule.activity)
+        Shots.save(rule, "unfolded_1_today")
+        Shots.tab(rule, "tab_deen"); Shots.save(rule, "unfolded_2_deen")
+        Shots.tab(rule, "tab_body"); Shots.save(rule, "unfolded_3_body")
+    }
+}
+
+@RunWith(AndroidJUnit4::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [34], qualifiers = "w360dp-h800dp-xxhdpi")
+class AlarmScreenshot {
+    init {
+        Motion.live = false
+        val zone = ZoneId.systemDefault()
+        val night = NightCalculator.currentOrNext(51.5074, -0.1278, Method.MUSLIM_WORLD_LEAGUE, Instant.now(), zone)
+        AlarmService.ringing = AlarmService.Ringing(night, Reminders.all[0], test = false, startedAt = Instant.now())
+    }
+
+    @get:Rule val rule = createAndroidComposeRule<AlarmActivity>()
+
+    @Test fun alarmPage() = Shots.save(rule, "folded_7_alarm")
+}

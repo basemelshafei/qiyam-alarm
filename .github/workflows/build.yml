@@ -26,6 +26,14 @@ jobs:
       - name: Tests (night calculation + screen)
         run: gradle :app:testDebugUnitTest --stacktrace
 
+      - name: Keep screenshots of every screen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: app/build/screenshots/
+          if-no-files-found: ignore
+
       - name: Keep test reports if anything failed
         if: failure()
         uses: actions/upload-artifact@v4

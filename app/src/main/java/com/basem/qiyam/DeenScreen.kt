@@ -33,7 +33,11 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.basem.qiyam.ui.Badge
+import com.basem.qiyam.ui.G
+import com.basem.qiyam.ui.Glyph
 import com.basem.qiyam.ui.Night
+import com.basem.qiyam.ui.Rings
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -60,7 +64,7 @@ fun DeenScreen(onOpenQiyam: () -> Unit) {
                 val status = log.prayer(day, p)
                 Column(Modifier.testTag("prayer_${p.id}")) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(p.label, color = Night.Text, fontSize = 16.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                        Text(p.label, color = Night.Text, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
                         Text(p.arabic, color = Night.Muted, fontSize = 15.sp)
                         Spacer(Modifier.width(10.dp))
                         Text(fmt.format(p.time(times)), color = Night.Muted, fontSize = 13.sp)
@@ -85,7 +89,7 @@ fun DeenScreen(onOpenQiyam: () -> Unit) {
                 Spacer(Modifier.width(64.dp))
                 week.forEach { d ->
                     Text(
-                        d.dayOfWeek.name.take(1), color = if (d == day) Night.Gold else Night.Muted, fontSize = 11.sp,
+                        d.dayOfWeek.name.take(1), color = if (d == day) Night.Gold else Night.Muted, fontSize = 12.sp,
                         modifier = Modifier.weight(1f), textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                     )
                 }
@@ -93,14 +97,14 @@ fun DeenScreen(onOpenQiyam: () -> Unit) {
             Prayer.entries.forEach { p ->
                 WeekRow(p.label, week, day) { d -> statusColor(log.prayer(d, p)).takeIf { log.prayer(d, p) != PrayerStatus.NONE } }
             }
-            WeekRow("Qiyam", week, day) { d -> Night.Gold.takeIf { prefs.woke(d) || log.done(d, "qiyam") } }
+            WeekRow("Qiyam", week, day) { d -> Rings.Deen.takeIf { prefs.woke(d) || log.done(d, "qiyam") } }
             WeekRow("Adhkar", week, day) { d ->
                 val n = listOf("adhkar_am", "adhkar_pm").count { log.done(d, it) }
-                when (n) { 2 -> Night.Gold; 1 -> Night.Warn; else -> null }
+                when (n) { 2 -> Rings.Deen; 1 -> Night.Warn; else -> null }
             }
             WeekRow("Quran", week, day) { d ->
                 val n = listOf("quran_new", "quran_rev").count { log.done(d, it) }
-                when (n) { 2 -> Night.Gold; 1 -> Night.Warn; else -> null }
+                when (n) { 2 -> Rings.Deen; 1 -> Night.Warn; else -> null }
             }
         }
 
@@ -121,7 +125,7 @@ fun DeenScreen(onOpenQiyam: () -> Unit) {
                     val future = d.isAfter(day)
                     StatusChip(
                         d.format(DateTimeFormatter.ofPattern("d")), done,
-                        Night.Gold, enabled = !future, modifier = Modifier.weight(1f), compact = true,
+                        Rings.Deen, enabled = !future, modifier = Modifier.weight(1f), compact = true,
                     ) { log.toggle(d, "fast") }
                 }
             }
@@ -132,8 +136,8 @@ fun DeenScreen(onOpenQiyam: () -> Unit) {
         Card {
             SectionTitle("Adhkar")
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                StatusChip("☀️ Morning", log.done(day, "adhkar_am"), Night.Gold) { log.toggle(day, "adhkar_am") }
-                StatusChip("🌙 Evening", log.done(day, "adhkar_pm"), Night.Gold) { log.toggle(day, "adhkar_pm") }
+                StatusChip("Morning", log.done(day, "adhkar_am"), Rings.Deen) { log.toggle(day, "adhkar_am") }
+                StatusChip("Evening", log.done(day, "adhkar_pm"), Rings.Deen) { log.toggle(day, "adhkar_pm") }
             }
             Text("Morning after Fajr until sunrise (${fmt.format(times.sunrise)}); evening after Asr until Maghrib.", color = Night.Muted, fontSize = 12.sp)
         }
@@ -144,18 +148,18 @@ fun DeenScreen(onOpenQiyam: () -> Unit) {
                 Modifier.fillMaxWidth().clickable(onClick = onOpenQiyam),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("🌙", fontSize = 26.sp)
+                Badge(G.MOON, Color(0xFF5E5CE6), 36.dp)
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     val streak = prefs.streak(day)
-                    Text("Qiyam alarm", color = Night.Text, fontSize = 17.sp, fontWeight = FontWeight.Medium)
+                    Text("Qiyam alarm", color = Night.Text, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
                     Text(
-                        "🔥 $streak night${if (streak == 1) "" else "s"} · best ${prefs.best()}" +
+                        "$streak-night streak · best ${prefs.best()}" +
                             if (prefs.enabled) " · alarm on" else " · alarm off",
                         color = Night.Muted, fontSize = 13.sp,
                     )
                 }
-                Text("›", color = Night.Gold, fontSize = 26.sp)
+                Glyph(G.CHEVRON, Night.Muted, 18.dp)
             }
         }
 
@@ -174,8 +178,8 @@ fun DeenScreen(onOpenQiyam: () -> Unit) {
                 },
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                StatusChip("Memorised today", log.done(day, "quran_new"), Night.Gold) { log.toggle(day, "quran_new") }
-                StatusChip("Revised today", log.done(day, "quran_rev"), Night.Gold) { log.toggle(day, "quran_rev") }
+                StatusChip("Memorised today", log.done(day, "quran_new"), Rings.Deen) { log.toggle(day, "quran_new") }
+                StatusChip("Revised today", log.done(day, "quran_rev"), Rings.Deen) { log.toggle(day, "quran_rev") }
             }
             val last30 = (0L..29L).map { day.minusDays(it) }
             Text(
@@ -196,7 +200,7 @@ private fun WeekRow(label: String, week: List<LocalDate>, today: LocalDate, colo
                 Box(
                     Modifier.size(14.dp).clip(CircleShape)
                         .background(c ?: if (d.isAfter(today)) Color.Transparent else Night.CardEdge)
-                        .border(1.dp, if (d == today) Night.Gold.copy(alpha = 0.6f) else Color.Transparent, CircleShape),
+                        .border(1.5.dp, if (d == today) Night.Gold else Color.Transparent, CircleShape),
                 )
             }
         }
@@ -210,23 +214,22 @@ fun StatusChip(
 ) {
     Box(
         modifier.clip(RoundedCornerShape(50))
-            .background(if (on) color else Color.Transparent)
-            .border(1.dp, if (on) color else Night.CardEdge.copy(alpha = if (enabled) 1f else 0.4f), RoundedCornerShape(50))
+            .background(if (on) color else Night.Fill.copy(alpha = if (enabled) Night.Fill.alpha else Night.Fill.alpha / 2))
             .selectable(selected = on, enabled = enabled, role = Role.Checkbox, onClick = onClick)
             .padding(horizontal = if (compact) 2.dp else 8.dp, vertical = 7.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             label, maxLines = 1, softWrap = false,
-            color = if (on) Night.Ink else if (enabled) Night.Text else Night.Muted,
-            fontSize = if (compact) 12.sp else 13.sp,
+            color = if (on) Night.OnAccent else if (enabled) Night.Text else Night.Muted,
+            fontSize = if (compact) 13.sp else 14.sp, fontWeight = if (on) FontWeight.SemiBold else FontWeight.Normal,
         )
     }
 }
 
 fun statusColor(s: PrayerStatus): Color = when (s) {
-    PrayerStatus.JAMAAH -> Night.Gold
-    PrayerStatus.ON_TIME -> Night.Good
+    PrayerStatus.JAMAAH -> Rings.Deen
+    PrayerStatus.ON_TIME -> Night.Gold
     PrayerStatus.LATE -> Night.Warn
     PrayerStatus.MISSED -> Night.Dawn
     PrayerStatus.NONE -> Night.CardEdge

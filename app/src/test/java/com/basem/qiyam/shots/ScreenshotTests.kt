@@ -44,6 +44,23 @@ class PhoneScreenshots {
 
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [34], qualifiers = "w393dp-h1700dp-night-xxhdpi")
+class PhoneScreenshotsDark {
+    init { Motion.live = false }
+
+    @get:Rule val rule = createAndroidComposeRule<MainActivity>()
+
+    @Test fun allScreens() {
+        Shots.seed(rule.activity)
+        Shots.save(rule, "dark_1_today")
+        Shots.tab(rule, "tab_deen"); Shots.save(rule, "dark_2_deen")
+        Shots.tab(rule, "tab_body"); Shots.save(rule, "dark_3_body")
+        Shots.openQiyam(rule); Shots.save(rule, "dark_6_qiyam")
+    }
+}
+
+@RunWith(AndroidJUnit4::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], qualifiers = "w393dp-h852dp-xxhdpi")
 class AlarmScreenshot {
     init {

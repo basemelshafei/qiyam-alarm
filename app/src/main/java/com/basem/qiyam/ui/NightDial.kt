@@ -69,15 +69,15 @@ fun NightDial(
             val arcSize = Size(r * 2, r * 2)
 
             // First two thirds.
-            drawArc(Night.CardEdge, 180f, 119f, false, topLeft, arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
+            drawArc(Sky.Edge, 180f, 119f, false, topLeft, arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
             // The last third, glowing.
             if (inLastThird) drawArc(
-                Night.Gold.copy(alpha = 0.22f), 300f, 60f, false,
+                Sky.Gold.copy(alpha = 0.22f), 300f, 60f, false,
                 topLeft.minus(Offset(stroke, stroke)), Size(arcSize.width + stroke * 2, arcSize.height + stroke * 2),
                 style = Stroke(stroke * 2.2f, cap = StrokeCap.Round),
             )
             drawArc(
-                Brush.sweepGradient(listOf(Night.Gold, Night.Dawn, Night.Gold), c),
+                Brush.sweepGradient(listOf(Sky.Gold, Sky.Dawn, Sky.Gold), c),
                 300f, 60f, false, topLeft, arcSize, style = Stroke(stroke, cap = StrokeCap.Round),
             )
 
@@ -86,12 +86,12 @@ fun NightDial(
                 val a = Math.toRadians(deg.toDouble())
                 val inner = Offset(c.x + (r - stroke * 1.6f) * cos(a).toFloat(), c.y + (r - stroke * 1.6f) * sin(a).toFloat())
                 val outer = Offset(c.x + (r - stroke * 0.9f) * cos(a).toFloat(), c.y + (r - stroke * 0.9f) * sin(a).toFloat())
-                drawLine(Night.Muted, inner, outer, strokeWidth = 3f, cap = StrokeCap.Round)
+                drawLine(Sky.Muted, inner, outer, strokeWidth = 3f, cap = StrokeCap.Round)
             }
 
             // Horizon.
             drawLine(
-                Brush.horizontalGradient(listOf(Color.Transparent, Night.Muted.copy(alpha = 0.5f), Color.Transparent)),
+                Brush.horizontalGradient(listOf(Color.Transparent, Sky.Muted.copy(alpha = 0.5f), Color.Transparent)),
                 Offset(0f, c.y + stroke * 0.8f), Offset(w, c.y + stroke * 0.8f), strokeWidth = 2f,
             )
 
@@ -99,9 +99,9 @@ fun NightDial(
             if (progress != null) {
                 val a = Math.toRadians((180f + 180f * progress).toDouble())
                 val m = Offset(c.x + r * cos(a).toFloat(), c.y + r * sin(a).toFloat())
-                drawCircle(Night.Gold.copy(alpha = 0.25f * twinkle + 0.1f), radius = stroke * 2.4f, center = m)
-                drawCircle(Night.Text, radius = stroke * 0.95f, center = m)
-                drawCircle(Night.Ink, radius = stroke * 0.8f, center = m.plus(Offset(stroke * 0.45f, -stroke * 0.25f)))
+                drawCircle(Sky.Gold.copy(alpha = 0.25f * twinkle + 0.1f), radius = stroke * 2.4f, center = m)
+                drawCircle(Sky.Text, radius = stroke * 0.95f, center = m)
+                drawCircle(Sky.Ink, radius = stroke * 0.8f, center = m.plus(Offset(stroke * 0.45f, -stroke * 0.25f)))
             }
         }
         center()

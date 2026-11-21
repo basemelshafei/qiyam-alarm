@@ -36,7 +36,7 @@ import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.basem.qiyam.ui.Motion
-import com.basem.qiyam.ui.Night
+import com.basem.qiyam.ui.Sky
 import com.basem.qiyam.ui.NightDial
 import com.basem.qiyam.ui.QiyamTheme
 import kotlinx.coroutines.delay
@@ -100,57 +100,57 @@ private fun AlarmScreen(r: AlarmService.Ringing, onUp: () -> Unit, onSnooze: () 
     LaunchedEffect(Unit) { while (Motion.live) { now = Instant.now(); delay(1000) } }
 
     Column(
-        Modifier.fillMaxSize().background(Night.sky).verticalScroll(rememberScrollState()).padding(24.dp),
+        Modifier.fillMaxSize().background(Sky.gradient).verticalScroll(rememberScrollState()).padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Spacer(Modifier.height(24.dp))
-        Text(fmt.format(now), color = Night.Text, fontSize = 64.sp, fontWeight = FontWeight.Light)
+        Text(fmt.format(now), color = Sky.Text, fontSize = 64.sp, fontWeight = FontWeight.Light)
         Text(
             if (r.test) "Test alarm" else "The last third of the night has begun",
-            color = Night.Gold, fontSize = 16.sp, textAlign = TextAlign.Center,
+            color = Sky.Gold, fontSize = 16.sp, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(8.dp))
         NightDial(r.night.progress(now), Modifier.widthIn(max = 420.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(bottom = 6.dp)) {
-                Text(human(Duration.between(now, r.night.fajr)), color = Night.Text, fontSize = 26.sp, fontWeight = FontWeight.SemiBold)
-                Text("until Fajr · ${fmt.format(r.night.fajr)}", color = Night.Muted, fontSize = 13.sp)
+                Text(human(Duration.between(now, r.night.fajr)), color = Sky.Text, fontSize = 26.sp, fontWeight = FontWeight.SemiBold)
+                Text("until Fajr · ${fmt.format(r.night.fajr)}", color = Sky.Muted, fontSize = 13.sp)
             }
         }
         if (Plan.isFastDay(r.night.key(zone))) {
             Text(
-                "🍽 Fast day: suhoor before ${fmt.format(r.night.fajr)}",
-                color = Night.Gold, fontSize = 15.sp, modifier = Modifier.padding(top = 12.dp),
+                "Fast day: suhoor before ${fmt.format(r.night.fajr)}",
+                color = Sky.Gold, fontSize = 15.sp, modifier = Modifier.padding(top = 12.dp),
             )
         }
         Spacer(Modifier.height(20.dp))
 
         Text(
-            r.reminder.arabic, color = Night.Text, fontSize = 21.sp, lineHeight = 36.sp, textAlign = TextAlign.Center,
+            r.reminder.arabic, color = Sky.Text, fontSize = 21.sp, lineHeight = 36.sp, textAlign = TextAlign.Center,
             style = androidx.compose.ui.text.TextStyle(textDirection = TextDirection.Rtl),
         )
         Spacer(Modifier.height(10.dp))
-        Text(r.reminder.english, color = Night.Muted, fontSize = 15.sp, lineHeight = 22.sp, textAlign = TextAlign.Center)
-        Text("— ${r.reminder.source}", color = Night.Gold.copy(alpha = 0.8f), fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+        Text(r.reminder.english, color = Sky.Muted, fontSize = 15.sp, lineHeight = 22.sp, textAlign = TextAlign.Center)
+        Text("— ${r.reminder.source}", color = Sky.Gold.copy(alpha = 0.8f), fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
 
         Spacer(Modifier.height(28.dp))
         Button(
             onClick = onUp,
             modifier = Modifier.widthIn(max = 420.dp).fillMaxWidth().height(64.dp),
             shape = RoundedCornerShape(32.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Night.Gold, contentColor = Night.Ink),
+            colors = ButtonDefaults.buttonColors(containerColor = Sky.Gold, contentColor = Sky.Ink),
         ) { Text("I'm up  ·  Alhamdulillah", fontSize = 18.sp, fontWeight = FontWeight.SemiBold) }
         Spacer(Modifier.height(12.dp))
         OutlinedButton(
             onClick = onSnooze,
             modifier = Modifier.widthIn(max = 420.dp).fillMaxWidth().height(52.dp),
             shape = RoundedCornerShape(26.dp),
-        ) { Text("Snooze", color = Night.Muted, fontSize = 16.sp) }
+        ) { Text("Snooze", color = Sky.Muted, fontSize = 16.sp) }
 
         Spacer(Modifier.height(24.dp))
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("On waking", color = Night.Muted, fontSize = 12.sp)
+            Text("On waking", color = Sky.Muted, fontSize = 12.sp)
             Text(
-                Reminders.wakingDua.arabic, color = Night.Text.copy(alpha = 0.85f), fontSize = 17.sp,
+                Reminders.wakingDua.arabic, color = Sky.Text.copy(alpha = 0.85f), fontSize = 17.sp,
                 textAlign = TextAlign.Center, lineHeight = 28.sp,
             )
         }

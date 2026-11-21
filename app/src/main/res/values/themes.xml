@@ -1,10 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.Qiyam" parent="android:Theme.Material.NoActionBar">
+    <!-- Light mode: Apple's grouped background, dark status-bar icons. -->
+    <style name="Theme.Qiyam" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/page</item>
+        <item name="android:statusBarColor">@color/page</item>
+        <item name="android:navigationBarColor">@color/bar</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+    <!-- The alarm page is always a night sky. -->
+    <style name="Theme.Qiyam.Alarm" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/night</item>
         <item name="android:statusBarColor">@color/night</item>
         <item name="android:navigationBarColor">@color/night</item>
     </style>
+    <color name="page">#FFF2F2F7</color>
+    <color name="bar">#FFF9F9F9</color>
     <color name="night">#FF070B1A</color>
     <color name="gold">#FFE8C27A</color>
 </resources>

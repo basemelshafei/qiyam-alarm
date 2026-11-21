@@ -31,11 +31,14 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.basem.qiyam.ui.Badge
+import com.basem.qiyam.ui.G
+import com.basem.qiyam.ui.Glyph
 import com.basem.qiyam.ui.Night
+import com.basem.qiyam.ui.Rings
 import java.time.format.DateTimeFormatter
 
 /** The whole day as one timeline around the prayers, with a score that adds it all up. */
@@ -54,18 +57,24 @@ fun TodayScreen(onOpen: (Tab) -> Unit) {
 
     val wide = LocalConfiguration.current.screenWidthDp >= 600
     val scoreCard: @Composable () -> Unit = {
-        // Score + pillars
+        // Activity rings: one per area, the day's score in the middle
         Card {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                ScoreRing(score, 108.dp, label = "today")
-                Spacer(Modifier.width(18.dp))
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    listOf(Pillar.DEEN to Tab.DEEN, Pillar.BODY to Tab.BODY).forEach { (p, t) ->
-                        PillarBar(p, Plan.pillarScore(items, p)) { onOpen(t) }
-                    }
+                val deen = Plan.pillarScore(items, Pillar.DEEN)
+                val body = Plan.pillarScore(items, Pillar.BODY)
+                ActivityRings(
+                    listOf(RingValue(deen / 100f, Rings.Deen), RingValue(body / 100f, Rings.Body)),
+                    size = 128.dp, stroke = 15.dp,
+                ) {
+                    Text("$score", color = Night.Text, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                }
+                Spacer(Modifier.width(20.dp))
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    RingLegend("Deen", deen, Rings.Deen) { onOpen(Tab.DEEN) }
+                    RingLegend("Body", body, Rings.Body) { onOpen(Tab.BODY) }
                     Text(
-                        "${items.count { it.progress >= 1f }} of ${items.count { it.weight > 0 }} done",
-                        color = Night.Muted, fontSize = 12.sp,
+                        "${items.count { it.progress >= 1f }} of ${items.count { it.weight > 0 }} done today",
+                        color = Night.Muted, fontSize = 13.sp,
                     )
                 }
             }
@@ -78,10 +87,10 @@ fun TodayScreen(onOpen: (Tab) -> Unit) {
             Card {
                 SectionTitle("Next up")
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(next.pillar.emoji, fontSize = 24.sp)
+                    Badge(glyphFor(next), pillarColor(next.pillar), 36.dp)
                     Spacer(Modifier.width(12.dp))
                     Column(Modifier.weight(1f)) {
-                        Text(next.title, color = Night.Text, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+                        Text(next.title, color = Night.Text, fontSize = 17.sp, fontWeight = FontWeight.SemiBold)
                         Text(
                             if (next.time.isAfter(now)) "at ${fmt.format(next.time)} · in ${human(java.time.Duration.between(now, next.time))}"
                             else "since ${fmt.format(next.time)}",
@@ -143,7 +152,7 @@ fun TodayScreen(onOpen: (Tab) -> Unit) {
 
     Page(
         title = day.format(DateTimeFormatter.ofPattern("EEEE d MMMM")),
-        subtitle = listOf(hijri(day), "📍 ${prefs.placeName}").filter { it.isNotBlank() }.joinToString(" · "),
+        subtitle = listOf(hijri(day), prefs.placeName).filter { it.isNotBlank() }.joinToString(" · "),
     ) {
         if (wide) {
             // Unfolded: the timeline on the left, the overview on the right.
@@ -166,17 +175,30 @@ fun TodayScreen(onOpen: (Tab) -> Unit) {
 }
 
 @Composable
-private fun PillarBar(p: Pillar, score: Int, onClick: () -> Unit) {
+private fun RingLegend(label: String, score: Int, color: androidx.compose.ui.graphics.Color, onClick: () -> Unit) {
     Column(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
-        Row {
-            Text("${p.emoji} ${p.label}", color = Night.Text, fontSize = 13.sp, modifier = Modifier.weight(1f))
-            Text("$score", color = scoreColor(score), fontSize = 13.sp, fontWeight = FontWeight.Medium)
-        }
-        Spacer(Modifier.height(4.dp))
-        Box(Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)).background(Night.CardEdge)) {
-            Box(Modifier.fillMaxWidth(score / 100f).height(6.dp).clip(RoundedCornerShape(3.dp)).background(scoreColor(score)))
+        Text(label, color = Night.Text, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text("$score", color = color, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text("/100", color = color, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(bottom = 3.dp))
         }
     }
+}
+
+fun pillarColor(p: Pillar) = when (p) {
+    Pillar.DEEN -> Rings.Deen; Pillar.BODY -> Rings.Body; Pillar.CAREER -> Rings.Career; Pillar.WEALTH -> Rings.Wealth
+}
+
+fun glyphFor(item: TodayItem): G = when {
+    item.kind == ItemKind.QIYAM -> G.MOON
+    item.kind == ItemKind.PRAYER -> G.DOME
+    item.kind == ItemKind.GYM -> G.DUMBBELL
+    item.id == "fast" -> G.SUNRISE
+    item.id.startsWith("adhkar") -> G.SPARKLE
+    item.id.startsWith("quran") -> G.BOOK
+    item.pillar == Pillar.CAREER -> G.BRIEFCASE
+    item.pillar == Pillar.WEALTH -> G.CHART
+    else -> G.CHECK
 }
 
 @Composable
@@ -199,23 +221,23 @@ private fun TimelineRow(item: TodayItem, time: String, past: Boolean, onTap: () 
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(time, color = if (past && !done) Night.Muted else Night.Text, fontSize = 13.sp, modifier = Modifier.width(48.dp))
-        Text(item.pillar.emoji, fontSize = 16.sp, modifier = Modifier.width(28.dp))
+        Text(time, color = Night.Muted, fontSize = 13.sp, modifier = Modifier.width(46.dp))
+        Badge(glyphFor(item), pillarColor(item.pillar), 28.dp)
+        Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(
                 item.title,
                 color = if (done) Night.Muted else Night.Text,
-                fontSize = 16.sp, fontWeight = FontWeight.Medium,
-                textDecoration = if (done) TextDecoration.LineThrough else null,
+                fontSize = 17.sp,
             )
-            Text(item.note, color = Night.Muted, fontSize = 12.sp, maxLines = 1)
+            Text(item.note, color = Night.Muted, fontSize = 13.sp, maxLines = 1)
         }
         Box(
-            Modifier.size(28.dp).clip(CircleShape)
-                .background(if (done) Night.Gold else if (partial) Night.Warn.copy(alpha = 0.5f) else Night.Ink)
-                .border(2.dp, if (done) Night.Gold else Night.CardEdge, CircleShape),
+            Modifier.size(26.dp).clip(CircleShape)
+                .background(if (done) Night.Gold else if (partial) Night.Warn else androidx.compose.ui.graphics.Color.Transparent)
+                .border(1.5.dp, if (done) Night.Gold else if (partial) Night.Warn else Night.Muted.copy(alpha = 0.5f), CircleShape),
             contentAlignment = Alignment.Center,
-        ) { if (done) Text("✓", color = Night.Ink, fontSize = 15.sp, fontWeight = FontWeight.Bold) }
+        ) { if (done || partial) Glyph(G.CHECK, Night.OnAccent, 16.dp) }
     }
 }
 
@@ -231,7 +253,7 @@ fun GymTypeDialog(onPick: (String) -> Unit, onDismiss: () -> Unit) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         row.forEach { t ->
                             Box(
-                                Modifier.clip(RoundedCornerShape(50)).border(1.dp, Night.CardEdge, RoundedCornerShape(50))
+                                Modifier.clip(RoundedCornerShape(50)).background(Night.Fill)
                                     .clickable { onPick(t) }.padding(horizontal = 14.dp, vertical = 8.dp),
                             ) { Text(t, color = Night.Text, fontSize = 14.sp) }
                         }
@@ -249,7 +271,7 @@ fun GymTypeDialog(onPick: (String) -> Unit, onDismiss: () -> Unit) {
 fun ComingSoon(tab: Tab, features: List<String>) {
     Page(tab.label, "Coming in stage 2") {
         Card {
-            Text(tab.icon, fontSize = 36.sp)
+            Badge(tab.glyph, tab.color, 44.dp)
             features.forEach { Text("•  $it", color = Night.Text, fontSize = 15.sp) }
         }
     }

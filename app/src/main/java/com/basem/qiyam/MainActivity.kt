@@ -35,9 +35,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.basem.qiyam.ui.G
+import com.basem.qiyam.ui.Glyph
 import com.basem.qiyam.ui.Night
+import com.basem.qiyam.ui.Rings
 import com.basem.qiyam.ui.QiyamTheme
 
 class MainActivity : ComponentActivity() {
@@ -49,12 +54,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-enum class Tab(val label: String, val icon: String) {
-    TODAY("Today", "☀️"),
-    DEEN("Deen", "🕌"),
-    BODY("Body", "💪"),
-    CAREER("Career", "🚀"),
-    WEALTH("Wealth", "📈"),
+enum class Tab(val label: String, val glyph: G, val color: Color) {
+    TODAY("Today", G.SUN, Color(0xFFFF9500)),
+    DEEN("Deen", G.MOON, Rings.Deen),
+    BODY("Body", G.HEART, Rings.Body),
+    CAREER("Career", G.BRIEFCASE, Rings.Career),
+    WEALTH("Wealth", G.CHART, Color(0xFFFFB800)),
 }
 
 @Composable
@@ -119,9 +124,10 @@ private fun AppShell() {
         } else {
             Column(Modifier.fillMaxSize().statusBarsPadding()) {
                 Box(Modifier.weight(1f).fillMaxWidth()) { content() }
-                HorizontalDivider(color = Night.CardEdge)
+                // iOS tab bar: hairline on top, translucent bar, blue when selected.
+                HorizontalDivider(color = Night.CardEdge, thickness = 0.5.dp)
                 Row(
-                    Modifier.fillMaxWidth().background(Night.Ink).navigationBarsPadding().padding(vertical = 6.dp),
+                    Modifier.fillMaxWidth().background(Night.Bar).navigationBarsPadding().padding(top = 6.dp, bottom = 4.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                 ) { Tab.entries.forEach { TabButton(it, it == tab) { tab = it } } }
             }
@@ -137,7 +143,7 @@ private fun TabButton(t: Tab, selected: Boolean, onClick: () -> Unit) {
             .padding(horizontal = 8.dp, vertical = 6.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(t.icon, fontSize = if (selected) 22.sp else 19.sp)
-        Text(t.label, color = if (selected) Night.Gold else Night.Muted, fontSize = 11.sp)
+        Glyph(t.glyph, if (selected) Night.Gold else Night.Muted, 25.dp)
+        Text(t.label, color = if (selected) Night.Gold else Night.Muted, fontSize = 10.sp, fontWeight = FontWeight.Medium)
     }
 }

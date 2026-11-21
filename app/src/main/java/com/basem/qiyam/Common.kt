@@ -47,10 +47,11 @@ fun Page(title: String, subtitle: String? = null, content: @Composable ColumnSco
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Column(Modifier.widthIn(max = 720.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Column {
-                Text(title, color = Night.Text, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
-                if (subtitle != null) Text(subtitle, color = Night.Muted, fontSize = 13.sp)
+        Column(Modifier.widthIn(max = 720.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(18.dp)) {
+            Column(Modifier.padding(top = 8.dp)) {
+                // iOS "large title"
+                Text(title, color = Night.Text, fontSize = 34.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.8).sp, lineHeight = 40.sp)
+                if (subtitle != null) Text(subtitle, color = Night.Muted, fontSize = 15.sp)
             }
             content()
             Spacer(Modifier.height(12.dp))
@@ -66,31 +67,51 @@ fun rememberNow(): Instant {
     return now
 }
 
-/** A ring showing a score out of 100. */
+/** One ring of an Apple Fitness-style ring stack. */
+data class RingValue(val progress: Float, val color: Color)
+
+/**
+ * Concentric activity rings, outermost first, with an optional label in the middle.
+ * Each ring sits on a faint track of its own colour, like Apple's Fitness rings.
+ */
 @Composable
-fun ScoreRing(score: Int, size: Dp, stroke: Dp = 10.dp, label: String? = null) {
+fun ActivityRings(
+    rings: List<RingValue>, size: Dp, stroke: Dp = 14.dp, gap: Dp = 3.dp,
+    center: (@Composable () -> Unit)? = null,
+) {
     Box(Modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(Modifier.size(size)) {
-            val s = stroke.toPx()
-            val box = Size(this.size.width - s, this.size.height - s)
-            val tl = Offset(s / 2, s / 2)
-            drawArc(Night.CardEdge, -90f, 360f, false, tl, box, style = Stroke(s, cap = StrokeCap.Round))
-            if (score > 0) {
-                drawArc(scoreColor(score), -90f, 360f * score / 100f, false, tl, box, style = Stroke(s, cap = StrokeCap.Round))
+            val sw = stroke.toPx(); val g = gap.toPx()
+            rings.forEachIndexed { i, r ->
+                val inset = sw / 2 + i * (sw + g)
+                val tl = Offset(inset, inset)
+                val box = Size(this.size.width - 2 * inset, this.size.height - 2 * inset)
+                if (box.width <= 0f) return@forEachIndexed
+                drawArc(r.color.copy(alpha = 0.22f), 0f, 360f, false, tl, box, style = Stroke(sw))
+                val sweep = 360f * r.progress.coerceIn(0f, 1f)
+                if (sweep > 0f) drawArc(r.color, -90f, sweep.coerceAtLeast(1f), false, tl, box, style = Stroke(sw, cap = StrokeCap.Round))
             }
         }
+        center?.invoke()
+    }
+}
+
+/** A single ring with the score written inside. */
+@Composable
+fun ScoreRing(score: Int, size: Dp, stroke: Dp = 10.dp, label: String? = null, color: Color = scoreColor(score)) {
+    ActivityRings(listOf(RingValue(score / 100f, color)), size, stroke) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text("$score", color = Night.Text, fontSize = (size.value / 3.2f).sp, fontWeight = FontWeight.SemiBold)
+            Text("$score", color = Night.Text, fontSize = (size.value / 3.2f).sp, fontWeight = FontWeight.Bold)
             if (label != null) Text(label, color = Night.Muted, fontSize = 11.sp)
         }
     }
 }
 
 fun scoreColor(score: Int): Color = when {
-    score >= 85 -> Night.Gold
-    score >= 60 -> Night.Good
+    score >= 85 -> Night.Good
+    score >= 60 -> Night.Gold
     score >= 35 -> Night.Warn
-    else -> Night.Dawn.copy(alpha = 0.8f)
+    else -> Night.Dawn
 }
 
 /** A small line chart of values over time. */

@@ -61,6 +61,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -73,7 +74,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.basem.qiyam.ui.Motion
+import com.basem.qiyam.ui.Badge
+import com.basem.qiyam.ui.G
+import com.basem.qiyam.ui.Glyph
 import com.basem.qiyam.ui.Night
+import com.basem.qiyam.ui.Rings
+import com.basem.qiyam.ui.Sky
 import com.basem.qiyam.ui.NightDial
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -134,13 +140,16 @@ fun QiyamScreen(onBack: () -> Unit) {
 
                 // Header
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = onBack) { Text("‹ Deen", color = Night.Gold, fontSize = 16.sp) }
+                    TextButton(onClick = onBack, contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)) {
+                        Glyph(G.CHEVRON, Night.Gold, 20.dp, Modifier.graphicsLayer { rotationZ = 180f })
+                        Text("Deen", color = Night.Gold, fontSize = 17.sp)
+                    }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Column(Modifier.weight(1f)) {
-                        Text("Qiyam alarm", color = Night.Text, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
+                        Text("Qiyam alarm", color = Night.Text, fontSize = 34.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.8).sp)
                         Text(
-                            "📍 ${prefs.placeName} · ${prefs.method.label.substringBefore(" (")}",
+                            "${prefs.placeName} · ${prefs.method.label.substringBefore(" (")}",
                             color = Night.Muted, fontSize = 13.sp,
                             modifier = Modifier.clickable { locationPerm.launch(Manifest.permission.ACCESS_COARSE_LOCATION) },
                         )
@@ -148,43 +157,49 @@ fun QiyamScreen(onBack: () -> Unit) {
                     Switch(
                         checked = prefs.enabled,
                         onCheckedChange = { prefs.enabled = it; changed() },
-                        colors = SwitchDefaults.colors(checkedTrackColor = Night.Gold, checkedThumbColor = Night.Ink),
+                        colors = SwitchDefaults.colors(checkedTrackColor = Night.Good, checkedThumbColor = Night.OnAccent, checkedBorderColor = Night.Good),
                     )
                 }
 
-                // The night dial
-                NightDial(if (inNight) night.progress(now) else null) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(bottom = 4.dp)) {
-                        when {
-                            !inNight -> {
-                                Text("Tonight's last third", color = Night.Muted, fontSize = 13.sp)
-                                Text(fmt.format(night.lastThird), color = Night.Text, fontSize = 40.sp, fontWeight = FontWeight.Light)
-                            }
-                            now.isBefore(night.lastThird) -> {
-                                Text("Last third begins in", color = Night.Muted, fontSize = 13.sp)
-                                Text(countdown(java.time.Duration.between(now, night.lastThird)), color = Night.Text, fontSize = 40.sp, fontWeight = FontWeight.Light)
-                            }
-                            else -> {
-                                Text("✦ The last third is now ✦", color = Night.Gold, fontSize = 14.sp)
-                                Text(countdown(java.time.Duration.between(now, night.fajr)), color = Night.Text, fontSize = 40.sp, fontWeight = FontWeight.Light)
-                                Text("until Fajr", color = Night.Muted, fontSize = 12.sp)
+                // The night dial, always on a night-sky card
+                Column(
+                    Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Sky.gradient).padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    // The night dial
+                    NightDial(if (inNight) night.progress(now) else null) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(bottom = 4.dp)) {
+                            when {
+                                !inNight -> {
+                                    Text("Tonight's last third", color = Sky.Muted, fontSize = 13.sp)
+                                    Text(fmt.format(night.lastThird), color = Sky.Text, fontSize = 40.sp, fontWeight = FontWeight.Light)
+                                }
+                                now.isBefore(night.lastThird) -> {
+                                    Text("Last third begins in", color = Sky.Muted, fontSize = 13.sp)
+                                    Text(countdown(java.time.Duration.between(now, night.lastThird)), color = Sky.Text, fontSize = 40.sp, fontWeight = FontWeight.Light)
+                                }
+                                else -> {
+                                    Text("The last third is now", color = Sky.Gold, fontSize = 14.sp)
+                                    Text(countdown(java.time.Duration.between(now, night.fajr)), color = Sky.Text, fontSize = 40.sp, fontWeight = FontWeight.Light)
+                                    Text("until Fajr", color = Sky.Muted, fontSize = 12.sp)
+                                }
                             }
                         }
                     }
-                }
 
-                // Times
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    TimeCell("Maghrib", fmt.format(night.maghrib))
-                    TimeCell("Midnight", fmt.format(night.midnight))
-                    TimeCell("Last third", fmt.format(night.lastThird), highlight = true)
-                    TimeCell("Fajr", fmt.format(night.fajr))
+                    // Times
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        TimeCell("Maghrib", fmt.format(night.maghrib))
+                        TimeCell("Midnight", fmt.format(night.midnight))
+                        TimeCell("Last third", fmt.format(night.lastThird), highlight = true)
+                        TimeCell("Fajr", fmt.format(night.fajr))
+                    }
                 }
 
                 // Alarm status
                 Card {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(if (prefs.enabled) "⏰" else "💤", fontSize = 26.sp)
+                        Badge(G.BELL, if (prefs.enabled) Night.Warn else Night.Muted, 36.dp)
                         Spacer(Modifier.size(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
@@ -229,7 +244,7 @@ fun QiyamScreen(onBack: () -> Unit) {
 
                 Text(
                     "Times are calculated on your phone. Check them against your local mosque, and pick the method that matches.",
-                    color = Night.Muted, fontSize = 11.sp, textAlign = TextAlign.Center,
+                    color = Night.Muted, fontSize = 12.sp, textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
                 )
             }
@@ -253,9 +268,9 @@ private fun countdown(d: java.time.Duration): String {
 
 @Composable
 internal fun Card(content: @Composable ColumnScope.() -> Unit) {
+    // iOS inset-grouped card: no border, soft corners, sits on the grey grouped background.
     Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(Night.Card)
-            .border(1.dp, Night.CardEdge, RoundedCornerShape(20.dp)).padding(16.dp),
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(Night.Card).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         content = content,
     )
@@ -263,13 +278,13 @@ internal fun Card(content: @Composable ColumnScope.() -> Unit) {
 
 @Composable
 internal fun SectionTitle(text: String) =
-    Text(text.uppercase(), color = Night.Muted, fontSize = 11.sp, letterSpacing = 1.5.sp, fontWeight = FontWeight.Medium)
+    Text(text.uppercase(), color = Night.Muted, fontSize = 13.sp, letterSpacing = 0.2.sp)
 
 @Composable
 private fun TimeCell(label: String, time: String, highlight: Boolean = false) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(time, color = if (highlight) Night.Gold else Night.Text, fontSize = 18.sp, fontWeight = FontWeight.Medium)
-        Text(label, color = Night.Muted, fontSize = 11.sp)
+        Text(time, color = if (highlight) Sky.Gold else Sky.Text, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
+        Text(label, color = Sky.Muted, fontSize = 11.sp)
     }
 }
 
@@ -279,10 +294,9 @@ internal fun Chips(options: List<Pair<String, Int>>, selected: Int, onPick: (Int
         options.forEach { (label, value) ->
             val on = value == selected
             Box(
-                Modifier.clip(RoundedCornerShape(50)).background(if (on) Night.Gold else Color.Transparent)
-                    .border(1.dp, if (on) Night.Gold else Night.CardEdge, RoundedCornerShape(50))
+                Modifier.clip(RoundedCornerShape(50)).background(if (on) Night.Gold else Night.Fill)
                     .selectable(selected = on, onClick = { onPick(value) }).padding(horizontal = 14.dp, vertical = 7.dp),
-            ) { Text(label, color = if (on) Night.Ink else Night.Text, fontSize = 13.sp) }
+            ) { Text(label, color = if (on) Night.OnAccent else Night.Text, fontSize = 14.sp, fontWeight = if (on) FontWeight.SemiBold else FontWeight.Normal) }
         }
     }
 }
@@ -294,12 +308,12 @@ private fun StreakCard(prefs: Prefs, tonight: LocalDate, @Suppress("UNUSED_PARAM
     val streak = prefs.streak(tonight)
     Card {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("🔥", fontSize = 26.sp)
+            Badge(G.FLAME, Night.Warn, 36.dp)
             Spacer(Modifier.size(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(
                     if (streak == 0) "Start your streak tonight" else "$streak night${if (streak == 1) "" else "s"} in a row",
-                    color = Night.Text, fontSize = 17.sp, fontWeight = FontWeight.Medium,
+                    color = Night.Text, fontSize = 17.sp, fontWeight = FontWeight.SemiBold,
                 )
                 Text("Best: ${prefs.best()} · Total: ${prefs.wokeNights.size}", color = Night.Muted, fontSize = 13.sp)
             }
@@ -311,7 +325,7 @@ private fun StreakCard(prefs: Prefs, tonight: LocalDate, @Suppress("UNUSED_PARAM
                 val woke = prefs.woke(d)
                 Box(
                     Modifier.size(16.dp).clip(CircleShape)
-                        .background(if (woke) Night.Gold else Night.CardEdge.copy(alpha = if (i == 0) 1f else 0.6f)),
+                        .background(if (woke) Rings.Deen else Night.Fill),
                 )
             }
         }
@@ -452,7 +466,7 @@ private fun TelegramCard(prefs: Prefs, @Suppress("UNUSED_PARAMETER") version: In
     Card {
         SectionTitle("Telegram")
         if (prefs.telegramReady) {
-            Text("✅ Connected. Each night you'll get a message with \"I'm up\" and \"Snooze\" buttons that control the alarm.", color = Night.Text, fontSize = 14.sp)
+            Text("Connected. Each night you'll get a message with \"I'm up\" and \"Snooze\" buttons that control the alarm.", color = Night.Text, fontSize = 14.sp)
         } else {
             Text(
                 "1. In Telegram, message @BotFather, send /newbot, and copy the token.\n" +
@@ -470,7 +484,7 @@ private fun TelegramCard(prefs: Prefs, @Suppress("UNUSED_PARAMETER") version: In
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Button(
                 enabled = !busy && token.isNotBlank(),
-                colors = ButtonDefaults.buttonColors(containerColor = Night.Gold, contentColor = Night.Ink),
+                colors = ButtonDefaults.buttonColors(containerColor = Night.Gold, contentColor = Night.OnAccent),
                 onClick = {
                     busy = true
                     scope.launch {

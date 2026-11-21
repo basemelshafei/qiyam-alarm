@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.basem.qiyam.ui.Night
+import com.basem.qiyam.ui.Rings
 import java.time.DayOfWeek
 import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
@@ -60,15 +61,14 @@ fun BodyScreen() {
                     val plan = d.dayOfWeek.value in planned
                     Column(
                         Modifier.weight(1f).clip(RoundedCornerShape(12.dp))
-                            .background(if (done) Night.Gold else Color.Transparent)
-                            .border(1.dp, if (plan || done) Night.Gold.copy(alpha = if (done) 1f else 0.5f) else Night.CardEdge, RoundedCornerShape(12.dp))
+                            .background(if (done) Rings.Body else if (plan) Rings.Body.copy(alpha = 0.12f) else Night.Fill)
                             .padding(vertical = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text(d.dayOfWeek.name.take(1), color = if (done) Night.Ink else if (d == day) Night.Gold else Night.Muted, fontSize = 12.sp)
+                        Text(d.dayOfWeek.name.take(1), color = if (done) Night.OnAccent else if (d == day) Night.Gold else Night.Text, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                         Text(
                             if (done) log.text(d, "gym").take(4).ifBlank { "✓" } else if (plan) "plan" else "rest",
-                            color = if (done) Night.Ink else Night.Muted, fontSize = 10.sp, textAlign = TextAlign.Center,
+                            color = if (done) Night.OnAccent else Night.Muted, fontSize = 10.sp, textAlign = TextAlign.Center,
                         )
                     }
                 }
@@ -80,13 +80,13 @@ fun BodyScreen() {
             SectionTitle("Today's session")
             val type = log.text(day, "gym")
             Text(
-                if (log.done(day, "gym")) "Logged: $type 💪" else if (day.dayOfWeek.value in planned) "Planned gym day. What are you training?" else "Rest day. Log it if you train anyway.",
+                if (log.done(day, "gym")) "Logged: $type" else if (day.dayOfWeek.value in planned) "Planned gym day. What are you training?" else "Rest day. Log it if you train anyway.",
                 color = Night.Text, fontSize = 14.sp,
             )
             GymTypes.chunked(4).forEach { row ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     row.forEach { t ->
-                        StatusChip(t, log.done(day, "gym") && type == t, Night.Gold, modifier = Modifier.weight(1f), compact = true) {
+                        StatusChip(t, log.done(day, "gym") && type == t, Rings.Body, modifier = Modifier.weight(1f), compact = true) {
                             if (log.done(day, "gym") && type == t) {
                                 log.setValue(day, "gym", 0); log.setText(day, "gym", "")
                             } else {
@@ -121,7 +121,7 @@ fun BodyScreen() {
                         )
                     }
                 }
-                Sparkline(history.map { it.second }, Modifier.width(140.dp).height(48.dp))
+                Sparkline(history.map { it.second }, Modifier.width(140.dp).height(48.dp), color = Rings.Body)
             }
             OutlinedTextField(
                 value = input, onValueChange = { input = it.replace(',', '.') },
@@ -143,7 +143,7 @@ fun BodyScreen() {
                 DayOfWeek.entries.forEach { dow ->
                     val on = dow.value in planned
                     StatusChip(
-                        dow.name.take(2).lowercase().replaceFirstChar { it.uppercase() }, on, Night.Gold,
+                        dow.name.take(2).lowercase().replaceFirstChar { it.uppercase() }, on, Rings.Body,
                         modifier = Modifier.weight(1f), compact = true,
                     ) {
                         prefs.gymDays = if (on) planned - dow.value else planned + dow.value

@@ -494,6 +494,9 @@ private fun TelegramCard(prefs: Prefs, @Suppress("UNUSED_PARAMETER") version: In
                 },
             ) { Text(if (prefs.telegramReady) "Reconnect" else "Connect") }
             if (prefs.telegramReady) {
+                TextButton(onClick = { prefs.botToken = ""; prefs.chatId = 0L; token = "" }) {
+                    Text("Disconnect", color = Night.Dawn)
+                }
                 OutlinedButton(onClick = {
                     scope.launch {
                         val ok = withContext(Dispatchers.IO) {

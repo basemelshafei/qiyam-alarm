@@ -19,8 +19,9 @@ object Changes {
 
 /** Settings and long-lived state. */
 class Prefs(context: Context) {
+    private val app = context.applicationContext
     private val sp: SharedPreferences =
-        context.applicationContext.getSharedPreferences("qiyam", Context.MODE_PRIVATE)
+        app.getSharedPreferences("qiyam", Context.MODE_PRIVATE)
 
     private fun watch() = Changes.watch()
 
@@ -77,9 +78,10 @@ class Prefs(context: Context) {
 
     // --- Telegram -------------------------------------------------------------------------
 
+    /** Telegram bot token: encrypted on the phone and never backed up (see [Secrets]). */
     var botToken: String
-        get() = str("bot", "")
-        set(v) = edit { putString("bot", v.trim()) }
+        get() = Secrets.get(app, "bot")
+        set(v) = Secrets.put(app, "bot", v)
 
     var chatId: Long
         get() = long("chat", 0L)

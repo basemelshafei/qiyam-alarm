@@ -14,6 +14,7 @@ import com.basem.qiyam.ui.QiyamTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Secrets.migrate(this)
         Scheduler.createChannels(this)
         Scheduler.scheduleNext(this)
         setContent {

@@ -117,9 +117,12 @@ fun TodayScreen(onOpen: (Tab) -> Unit) {
                             val p = item.prayer!!
                             log.setPrayer(day, p, if (log.prayer(day, p) == PrayerStatus.NONE) PrayerStatus.ON_TIME else PrayerStatus.NONE)
                         }
-                        ItemKind.GYM -> if (log.done(day, "gym")) {
-                            log.setValue(day, "gym", 0); log.setText(day, "gym", "")
-                        } else gymPicker = true
+                        ItemKind.GYM -> when {
+                            log.done(day, "gym") -> { log.setValue(day, "gym", 0); log.setText(day, "gym", "") }
+                            Plan.gymSource(log, day) != null -> onOpen(Tab.BODY)
+                            else -> gymPicker = true
+                        }
+                        ItemKind.AUTO -> onOpen(Tab.BODY)
                     }
                 }
             }
@@ -151,7 +154,8 @@ fun TodayScreen(onOpen: (Tab) -> Unit) {
     }
 
     Page(
-        title = day.format(DateTimeFormatter.ofPattern("EEEE d MMMM")),
+        title = "Today",
+        overline = day.format(DateTimeFormatter.ofPattern("EEEE d MMMM")),
         subtitle = listOf(hijri(day), prefs.placeName).filter { it.isNotBlank() }.joinToString(" · "),
     ) {
         if (wide) {
@@ -193,6 +197,8 @@ fun glyphFor(item: TodayItem): G = when {
     item.kind == ItemKind.QIYAM -> G.MOON
     item.kind == ItemKind.PRAYER -> G.DOME
     item.kind == ItemKind.GYM -> G.DUMBBELL
+    item.id == "steps" -> G.STEPS
+    item.id == "sleep" -> G.BED
     item.id == "fast" -> G.SUNRISE
     item.id.startsWith("adhkar") -> G.SPARKLE
     item.id.startsWith("quran") -> G.BOOK

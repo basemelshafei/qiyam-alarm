@@ -14,7 +14,8 @@ enum class Pillar(val label: String, val emoji: String) {
 }
 
 /** How an item is completed when tapped on the Today screen. */
-enum class ItemKind { TOGGLE, PRAYER, QIYAM, GYM }
+/** AUTO items fill in from connected apps (Fitbit via Health Connect) and can't be ticked by hand. */
+enum class ItemKind { TOGGLE, PRAYER, QIYAM, GYM, AUTO }
 
 /**
  * One thing to do today.
@@ -43,6 +44,8 @@ object Plan {
     const val W_ADHKAR = 4
     const val W_QURAN = 5
     const val W_GYM = 8
+    const val W_STEPS = 6
+    const val W_SLEEP = 5
 
     fun isFastDay(day: LocalDate) = day.dayOfWeek == DayOfWeek.MONDAY || day.dayOfWeek == DayOfWeek.THURSDAY
 
@@ -81,15 +84,53 @@ object Plan {
         add("quran_rev", "Quran: revise", "Keep what you've memorised", Pillar.DEEN, p.isha.plus(Duration.ofMinutes(20)), W_QURAN)
 
         val gymType = log.text(day, "gym")
+        val auto = gymSource(log, day)
+        val gymDone = log.done(day, "gym") || auto != null
         list.add(
             TodayItem(
                 "gym", if (gymDay) "Gym" else "Gym (rest day)",
-                if (gymType.isNotBlank()) gymType else if (gymDay) "Tap to log your session" else "Optional today",
+                when {
+                    gymType.isNotBlank() -> gymType
+                    auto != null -> auto
+                    gymDay -> "Tap to log, or it fills in from Lyfta"
+                    else -> "Optional today"
+                },
                 Pillar.BODY, p.asr.plus(Duration.ofMinutes(45)), if (gymDay) W_GYM else 0,
-                if (log.done(day, "gym")) 1f else 0f, ItemKind.GYM,
+                if (gymDone) 1f else 0f, ItemKind.GYM,
             ),
         )
+
+        // From your Fitbit, once Health Connect is connected.
+        if (prefs.healthSyncedAt > 0L) {
+            val h = log.health(day)
+            val goal = prefs.stepGoal.coerceAtLeast(1)
+            list.add(
+                TodayItem(
+                    "steps", "Steps",
+                    "${String.format(java.util.Locale.US, "%,d", h.steps ?: 0)} of ${String.format(java.util.Locale.US, "%,d", goal)}",
+                    Pillar.BODY, p.isha.plus(Duration.ofMinutes(90)), W_STEPS,
+                    ((h.steps ?: 0L).toFloat() / goal).coerceIn(0f, 1f), ItemKind.AUTO,
+                ),
+            )
+            list.add(
+                TodayItem(
+                    "sleep", "Sleep",
+                    h.sleepMinutes?.let { "${it / 60}h ${it % 60}m last night" } ?: "No sleep recorded yet",
+                    Pillar.BODY, night.fajr.minus(Duration.ofMinutes(1)), W_SLEEP,
+                    ((h.sleepMinutes ?: 0L) / 420f).coerceIn(0f, 1f), ItemKind.AUTO,
+                ),
+            )
+        }
         return list.sortedBy { it.time }
+    }
+
+    /** Where today's workout came from, if a connected app recorded one. */
+    fun gymSource(log: DayLog, day: LocalDate): String? {
+        val lyfta = log.text(day, "lyfta")
+        if (lyfta.isNotBlank()) return "$lyfta · from Lyfta"
+        val hc = log.health(day)
+        if (hc.workout != null) return "${hc.workout}${hc.workoutMinutes?.let { " · $it min" } ?: ""} · from Fitbit"
+        return null
     }
 
     /** 0–100. Items with weight 0 don't count against you; extra effort on them is a bonus up to 100. */

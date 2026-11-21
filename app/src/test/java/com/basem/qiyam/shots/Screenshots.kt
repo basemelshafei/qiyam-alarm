@@ -50,6 +50,16 @@ object Shots {
         }
         prefs.markWoke(today)
         for (i in 0L..60L step 3) log.setWeight(today.minusDays(i), 79.4f + i * 0.045f)
+        // Connected apps: Lyfta workouts and a week of Fitbit data.
+        com.basem.qiyam.Lyfta.save(activity, com.basem.qiyam.LyftaSample.json(today))
+        prefs.lyftaKey = "sample"; prefs.lyftaSyncedAt = System.currentTimeMillis()
+        prefs.healthSyncedAt = System.currentTimeMillis()
+        for (i in 0L..6L) {
+            val d = today.minusDays(i)
+            log.setText(d, "hc_steps", (if (i == 0L) 6240 else 7000 + (i * 911) % 4000).toString())
+            log.setText(d, "hc_sleep_min", (370 + (i * 17) % 60).toString())
+            log.setText(d, "hc_rhr", (56 + i % 4).toString())
+        }
         log.setPrayer(today, Prayer.FAJR, PrayerStatus.JAMAAH)
         log.setValue(today, "adhkar_am", 1)
     }

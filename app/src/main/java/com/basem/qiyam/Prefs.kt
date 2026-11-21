@@ -87,6 +87,26 @@ class Prefs(context: Context) {
         get() = str("quranNow", "")
         set(v) = edit { putString("quranNow", v.trim()) }
 
+    // --- Connected apps --------------------------------------------------------------------
+
+    /** Daily step goal for the Body ring. */
+    var stepGoal: Int
+        get() = int("stepGoal", 8000)
+        set(v) = edit { putInt("stepGoal", v) }
+
+    var healthSyncedAt: Long
+        get() = long("hcSynced", 0L)
+        set(v) = edit { putLong("hcSynced", v) }
+
+    /** Personal Lyfta API key (my.lyfta.app › API). Stays on this phone. */
+    var lyftaKey: String
+        get() = str("lyftaKey", "")
+        set(v) = edit { putString("lyftaKey", v.trim()) }
+
+    var lyftaSyncedAt: Long
+        get() = long("lyftaSynced", 0L)
+        set(v) = edit { putLong("lyftaSynced", v) }
+
     // --- Telegram -------------------------------------------------------------------------
 
     var botToken: String

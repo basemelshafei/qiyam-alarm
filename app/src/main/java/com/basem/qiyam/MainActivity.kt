@@ -39,6 +39,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.basem.qiyam.ui.G
 import com.basem.qiyam.ui.Glyph
 import com.basem.qiyam.ui.Night
@@ -51,6 +55,18 @@ class MainActivity : ComponentActivity() {
         Scheduler.createChannels(this)
         Scheduler.scheduleNext(this)
         setContent { QiyamTheme { AppShell() } }
+    }
+
+    /** Each time you open the app: pull fresh Fitbit data, and Lyfta if it's been a while. */
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch {
+            runCatching { Health.sync(this@MainActivity) }
+            val p = Prefs(this@MainActivity)
+            if (p.lyftaKey.isNotBlank() && System.currentTimeMillis() - p.lyftaSyncedAt > 15 * 60_000L) {
+                withContext(Dispatchers.IO) { runCatching { Lyfta.sync(this@MainActivity) } }
+            }
+        }
     }
 }
 

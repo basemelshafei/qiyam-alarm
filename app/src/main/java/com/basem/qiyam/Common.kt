@@ -42,13 +42,14 @@ import java.time.temporal.ChronoField
 
 /** A scrolling page with a title, capped in width so it reads well on the unfolded screen. */
 @Composable
-fun Page(title: String, subtitle: String? = null, content: @Composable ColumnScope.() -> Unit) {
+fun Page(title: String, subtitle: String? = null, overline: String? = null, content: @Composable ColumnScope.() -> Unit) {
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 18.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Column(Modifier.widthIn(max = 720.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(18.dp)) {
             Column(Modifier.padding(top = 8.dp)) {
+                if (overline != null) Text(overline.uppercase(), color = Night.Muted, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 // iOS "large title"
                 Text(title, color = Night.Text, fontSize = 34.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.8).sp, lineHeight = 40.sp)
                 if (subtitle != null) Text(subtitle, color = Night.Muted, fontSize = 15.sp)

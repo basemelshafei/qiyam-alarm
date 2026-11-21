@@ -362,7 +362,7 @@ private fun Checklist(ctx: Context, prefs: Prefs, @Suppress("UNUSED_PARAMETER") 
             )
         },
         Item(
-            "Battery: unrestricted", "Samsung puts apps to sleep. Also add Qiyam to \"Never sleeping apps\".",
+            "Battery: unrestricted", "So your phone never puts the alarm to sleep",
             runCatching { pm.isIgnoringBatteryOptimizations(pkg) }.getOrDefault(true),
         ) {
             @SuppressLint("BatteryLife")

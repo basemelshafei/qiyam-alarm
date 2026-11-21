@@ -86,7 +86,7 @@ fun BodyScreen() {
             GymTypes.chunked(4).forEach { row ->
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     row.forEach { t ->
-                        StatusChip(t, log.done(day, "gym") && type == t, Night.Gold, modifier = Modifier.weight(1f)) {
+                        StatusChip(t, log.done(day, "gym") && type == t, Night.Gold, modifier = Modifier.weight(1f), compact = true) {
                             if (log.done(day, "gym") && type == t) {
                                 log.setValue(day, "gym", 0); log.setText(day, "gym", "")
                             } else {
@@ -144,7 +144,7 @@ fun BodyScreen() {
                     val on = dow.value in planned
                     StatusChip(
                         dow.name.take(2).lowercase().replaceFirstChar { it.uppercase() }, on, Night.Gold,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f), compact = true,
                     ) {
                         prefs.gymDays = if (on) planned - dow.value else planned + dow.value
                     }

@@ -121,7 +121,7 @@ fun DeenScreen(onOpenQiyam: () -> Unit) {
                     val future = d.isAfter(day)
                     StatusChip(
                         d.format(DateTimeFormatter.ofPattern("d")), done,
-                        Night.Gold, enabled = !future, modifier = Modifier.weight(1f),
+                        Night.Gold, enabled = !future, modifier = Modifier.weight(1f), compact = true,
                     ) { log.toggle(d, "fast") }
                 }
             }
@@ -206,16 +206,22 @@ private fun WeekRow(label: String, week: List<LocalDate>, today: LocalDate, colo
 @Composable
 fun StatusChip(
     label: String, on: Boolean, color: Color, enabled: Boolean = true,
-    modifier: Modifier = Modifier, onClick: () -> Unit,
+    modifier: Modifier = Modifier, compact: Boolean = false, onClick: () -> Unit,
 ) {
     Box(
         modifier.clip(RoundedCornerShape(50))
             .background(if (on) color else Color.Transparent)
             .border(1.dp, if (on) color else Night.CardEdge.copy(alpha = if (enabled) 1f else 0.4f), RoundedCornerShape(50))
             .selectable(selected = on, enabled = enabled, role = Role.Checkbox, onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 7.dp),
+            .padding(horizontal = if (compact) 2.dp else 8.dp, vertical = 7.dp),
         contentAlignment = Alignment.Center,
-    ) { Text(label, maxLines = 1, color = if (on) Night.Ink else if (enabled) Night.Text else Night.Muted, fontSize = 13.sp) }
+    ) {
+        Text(
+            label, maxLines = 1, softWrap = false,
+            color = if (on) Night.Ink else if (enabled) Night.Text else Night.Muted,
+            fontSize = if (compact) 12.sp else 13.sp,
+        )
+    }
 }
 
 fun statusColor(s: PrayerStatus): Color = when (s) {

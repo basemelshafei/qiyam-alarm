@@ -71,8 +71,8 @@ fun NightDial(
             // First two thirds.
             drawArc(Night.CardEdge, 180f, 119f, false, topLeft, arcSize, style = Stroke(stroke, cap = StrokeCap.Round))
             // The last third, glowing.
-            drawArc(
-                Night.Gold.copy(alpha = if (inLastThird) 0.35f else 0.18f), 300f, 60f, false,
+            if (inLastThird) drawArc(
+                Night.Gold.copy(alpha = 0.22f), 300f, 60f, false,
                 topLeft.minus(Offset(stroke, stroke)), Size(arcSize.width + stroke * 2, arcSize.height + stroke * 2),
                 style = Stroke(stroke * 2.2f, cap = StrokeCap.Round),
             )

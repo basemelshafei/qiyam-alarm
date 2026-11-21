@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
@@ -51,10 +52,8 @@ fun TodayScreen(onOpen: (Tab) -> Unit) {
     val fmt = DateTimeFormatter.ofPattern("HH:mm").withZone(zone)
     var gymPicker by remember { mutableStateOf(false) }
 
-    Page(
-        title = day.format(DateTimeFormatter.ofPattern("EEEE d MMMM")),
-        subtitle = listOf(hijri(day), "📍 ${prefs.placeName}").filter { it.isNotBlank() }.joinToString(" · "),
-    ) {
+    val wide = LocalConfiguration.current.screenWidthDp >= 600
+    val scoreCard: @Composable () -> Unit = {
         // Score + pillars
         Card {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -71,7 +70,8 @@ fun TodayScreen(onOpen: (Tab) -> Unit) {
                 }
             }
         }
-
+    }
+    val nextUp: @Composable () -> Unit = {
         // Next up
         val next = items.firstOrNull { it.progress < 1f && it.weight > 0 && !it.time.isBefore(now.minusSeconds(3 * 3600)) }
         if (next != null) {
@@ -91,7 +91,8 @@ fun TodayScreen(onOpen: (Tab) -> Unit) {
                 }
             }
         }
-
+    }
+    val timeline: @Composable () -> Unit = {
         // Timeline
         Card {
             SectionTitle("Your day")
@@ -119,7 +120,8 @@ fun TodayScreen(onOpen: (Tab) -> Unit) {
                 color = Night.Muted, fontSize = 11.sp,
             )
         }
-
+    }
+    val history: @Composable () -> Unit = {
         // Last 14 days
         Card {
             SectionTitle("Last 14 days")
@@ -136,6 +138,23 @@ fun TodayScreen(onOpen: (Tab) -> Unit) {
                     }
                 }
             }
+        }
+    }
+
+    Page(
+        title = day.format(DateTimeFormatter.ofPattern("EEEE d MMMM")),
+        subtitle = listOf(hijri(day), "📍 ${prefs.placeName}").filter { it.isNotBlank() }.joinToString(" · "),
+    ) {
+        if (wide) {
+            // Unfolded: the timeline on the left, the overview on the right.
+            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                Column(Modifier.weight(1.15f)) { timeline() }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    scoreCard(); nextUp(); history()
+                }
+            }
+        } else {
+            scoreCard(); nextUp(); timeline(); history()
         }
     }
 

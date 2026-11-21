@@ -20,47 +20,31 @@ import java.time.ZoneId
 /*
  * Renders every screen with sample data into app/build/screenshots, so each build can be
  * looked at before installing. Pages are rendered extra tall to show them in full.
- * Cover screen ≈ 360dp wide; unfolded inner screen ≈ 690dp wide.
+ * Rendered at a typical modern Android phone size (393dp wide).
  */
 
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [34], qualifiers = "w360dp-h1700dp-xxhdpi")
-class FoldedScreenshots {
+@Config(sdk = [34], qualifiers = "w393dp-h1700dp-xxhdpi")
+class PhoneScreenshots {
     init { Motion.live = false }
 
     @get:Rule val rule = createAndroidComposeRule<MainActivity>()
 
     @Test fun allScreens() {
         Shots.seed(rule.activity)
-        Shots.save(rule, "folded_1_today")
-        Shots.tab(rule, "tab_deen"); Shots.save(rule, "folded_2_deen")
-        Shots.tab(rule, "tab_body"); Shots.save(rule, "folded_3_body")
-        Shots.tab(rule, "tab_career"); Shots.save(rule, "folded_4_career")
-        Shots.tab(rule, "tab_wealth"); Shots.save(rule, "folded_5_wealth")
-        Shots.openQiyam(rule); Shots.save(rule, "folded_6_qiyam")
+        Shots.save(rule, "phone_1_today")
+        Shots.tab(rule, "tab_deen"); Shots.save(rule, "phone_2_deen")
+        Shots.tab(rule, "tab_body"); Shots.save(rule, "phone_3_body")
+        Shots.tab(rule, "tab_career"); Shots.save(rule, "phone_4_career")
+        Shots.tab(rule, "tab_wealth"); Shots.save(rule, "phone_5_wealth")
+        Shots.openQiyam(rule); Shots.save(rule, "phone_6_qiyam")
     }
 }
 
 @RunWith(AndroidJUnit4::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [34], qualifiers = "w690dp-h1500dp-xhdpi")
-class UnfoldedScreenshots {
-    init { Motion.live = false }
-
-    @get:Rule val rule = createAndroidComposeRule<MainActivity>()
-
-    @Test fun allScreens() {
-        Shots.seed(rule.activity)
-        Shots.save(rule, "unfolded_1_today")
-        Shots.tab(rule, "tab_deen"); Shots.save(rule, "unfolded_2_deen")
-        Shots.tab(rule, "tab_body"); Shots.save(rule, "unfolded_3_body")
-    }
-}
-
-@RunWith(AndroidJUnit4::class)
-@GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [34], qualifiers = "w360dp-h800dp-xxhdpi")
+@Config(sdk = [34], qualifiers = "w393dp-h852dp-xxhdpi")
 class AlarmScreenshot {
     init {
         Motion.live = false
@@ -71,5 +55,5 @@ class AlarmScreenshot {
 
     @get:Rule val rule = createAndroidComposeRule<AlarmActivity>()
 
-    @Test fun alarmPage() = Shots.save(rule, "folded_7_alarm")
+    @Test fun alarmPage() = Shots.save(rule, "phone_7_alarm")
 }

@@ -18,7 +18,7 @@ Prayer times are computed on the phone with [Adhan](https://github.com/batoulapp
 Every push to `main` builds the APK in GitHub Actions and publishes it under **Releases**.
 Open the latest release on your phone, tap `Qiyam.apk`, and allow installs from your browser when asked.
 
-## Samsung (Z Fold) checklist
+## Samsung phones
 
 1. Open the app and fix everything on the **Finish setting up** card.
 2. Settings › Battery › Background usage limits › **Never sleeping apps** › add Qiyam.
